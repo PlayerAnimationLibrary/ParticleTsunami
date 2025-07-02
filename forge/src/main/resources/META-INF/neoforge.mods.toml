@@ -1,0 +1,18 @@
+modLoader="javafml"
+loaderVersion="*"
+license="LGPL-3.0"
+issueTrackerURL="https://github.com/PlayerAnimationLibrary/ParticleTsunami/issues"
+
+[[mods]]
+modId="${mod_id}"
+version="${mod_version}"
+displayName="${mod_name}"
+#updateJSONURL="https://change.me.example.invalid/updates.json" #optional
+displayURL="https://github.com/PlayerAnimationLibrary/ParticleTsunami"
+logoFile="logo.png"
+credits="Westernat"
+authors="dima_dencep, zigy"
+description=""
+
+[[mixins]]
+config="particle_tsunami.mixins.json"
