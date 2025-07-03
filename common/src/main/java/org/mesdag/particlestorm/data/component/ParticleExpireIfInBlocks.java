@@ -9,9 +9,9 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import org.mesdag.particlestorm.ParticleStorm;
 import org.mesdag.particlestorm.api.IParticleComponent;
 import org.mesdag.particlestorm.data.molang.MolangExp;
+import org.redlance.dima_dencep.mods.particletsunami.ParticleTsunamiMod;
 
 import java.util.HashSet;
 import java.util.List;
@@ -55,7 +55,7 @@ public final class ParticleExpireIfInBlocks implements IParticleComponent {
                 }
             } catch (CommandSyntaxException e) {
                 states.add(Blocks.AIR.defaultBlockState());
-                ParticleStorm.LOGGER.error(e.getMessage());
+                ParticleTsunamiMod.LOGGER.error("", e);
             }
         }
     }

@@ -1,28 +1,20 @@
 {
-    "required": true,
-    "minVersion": "0.8",
-    "package": "org.mesdag.particlestorm.mixin",
-    "compatibilityLevel": "JAVA_17",
-    "refmap": "particlestorm.refmap.json",
-    "mixins": [
-        "integration.geckolib.AnimationControllerMixin",
-        "integration.geckolib.AnimationProcessorMixin",
-        "integration.geckolib.BakedModelFactory$BuiltinMixin",
-        "integration.geckolib.GeoBoneMixin",
-        "integration.geckolib.MolangQueriesMixin",
-        "integration.geckolib.ParticleKeyframeDataMixin"
-    ],
-    "client": [
-        "BlockEntityMixin",
-        "EntityMixin",
-        "LivingEntityMixin",
-        "MinecraftMixin",
-        "ParticleEngineAccessor",
-        "TextureAtlasMixin",
-        "TextureAtlasSpriteMixin",
-        "integration.geckolib.GeoReplacedEntityRendererMixin"
-    ],
-    "injectors": {
-        "defaultRequire": 1
-  }
+  "required": true,
+  "minVersion": "0.8",
+  "package": "org.mesdag.particlestorm.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "client": [
+    "EntityMixin",
+    "LivingEntityMixin",
+    "ParticleEngineAccessor",
+    "ParticleEngineMixin",
+    "TextureAtlasMixin",
+    "TextureAtlasSpriteMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "mixins": [
+    "integration.geckolib.ParticleKeyframeDataMixin"
+  ]
 }

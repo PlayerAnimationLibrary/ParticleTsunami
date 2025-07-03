@@ -16,7 +16,7 @@ import org.mesdag.particlestorm.api.MolangInstance;
 
 public record SoundEffect(Holder<SoundEvent> soundEffect) implements IEventNode {
     public static final Codec<Holder<SoundEvent>> SOUND_EFFECT_CODEC = RegistryFileCodec.create(Registries.SOUND_EVENT, RecordCodecBuilder.create(instance -> instance.group(
-            ResourceLocation.CODEC.fieldOf("event_name").forGetter(SoundEvent::getLocation)
+            ResourceLocation.CODEC.fieldOf("event_name").forGetter(SoundEvent::location)
     ).apply(instance, SoundEvent::createVariableRangeEvent)));
     public static final MapCodec<SoundEffect> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             SOUND_EFFECT_CODEC.fieldOf("sound_effect").orElseGet(() -> Holder.direct(SoundEvents.EMPTY)).forGetter(SoundEffect::soundEffect)

@@ -1,5 +1,6 @@
 package org.mesdag.particlestorm.mixin.integration.geckolib;
 
+import com.zigythebird.playeranimcore.animation.keyframe.event.data.ParticleKeyframeData;
 import net.minecraft.resources.ResourceLocation;
 import org.mesdag.particlestorm.data.molang.MolangExp;
 import org.mesdag.particlestorm.data.molang.VariableTable;
@@ -7,10 +8,7 @@ import org.mesdag.particlestorm.data.molang.compiler.MolangParser;
 import org.mesdag.particlestorm.mixed.IParticleKeyframeData;
 import org.spongepowered.asm.mixin.*;
 
-import java.util.Arrays;
-
-@Pseudo
-@Mixin(targets = "software.bernie.geckolib.animation.keyframe.event.data.ParticleKeyframeData", remap = false)
+@Mixin(value = ParticleKeyframeData.class, remap = false)
 public abstract class ParticleKeyframeDataMixin implements IParticleKeyframeData {
     @Shadow
     @Final
@@ -24,7 +22,7 @@ public abstract class ParticleKeyframeDataMixin implements IParticleKeyframeData
     @Unique
     private MolangExp particlestorm$expression;
     @Unique
-    private int[] particlestorm$cachedId;
+    private int particlestorm$cachedId = -1;
 
     @Override
     public ResourceLocation particlestorm$getParticle() {
@@ -44,11 +42,12 @@ public abstract class ParticleKeyframeDataMixin implements IParticleKeyframeData
     }
 
     @Override
-    public int[] particlestorm$getCachedId(int size) {
-        if (particlestorm$cachedId == null) {
-            this.particlestorm$cachedId = new int[size];
-            Arrays.fill(particlestorm$cachedId, -1);
-        }
-        return particlestorm$cachedId;
+    public void particlestorm$setCachedId(int id) {
+        this.particlestorm$cachedId = id;
+    }
+
+    @Override
+    public int particlestorm$getCachedId() {
+        return this.particlestorm$cachedId;
     }
 }

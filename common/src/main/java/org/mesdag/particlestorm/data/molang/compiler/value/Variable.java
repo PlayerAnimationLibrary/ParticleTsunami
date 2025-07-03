@@ -1,8 +1,8 @@
 package org.mesdag.particlestorm.data.molang.compiler.value;
 
-import org.mesdag.particlestorm.ParticleStorm;
 import org.mesdag.particlestorm.api.MolangInstance;
 import org.mesdag.particlestorm.data.molang.compiler.MathValue;
+import org.redlance.dima_dencep.mods.particletsunami.ParticleTsunamiMod;
 
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.ToDoubleFunction;
@@ -29,7 +29,7 @@ public record Variable(String name, AtomicReference<ToDoubleFunction<MolangInsta
         try {
             return this.value.get().applyAsDouble(instance);
         } catch (Exception ex) {
-            ParticleStorm.LOGGER.error("Attempted to use Molang variable for incompatible animatable type ({}). An animation json needs to be fixed", this.name);
+            ParticleTsunamiMod.LOGGER.error("Attempted to use Molang variable for incompatible animatable type ({}). An animation json needs to be fixed", this.name);
             return 0;
         }
     }

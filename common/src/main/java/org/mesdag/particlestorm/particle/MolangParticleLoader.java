@@ -10,27 +10,24 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.Mth;
-import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.Level;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.mesdag.particlestorm.ParticleStorm;
 import org.mesdag.particlestorm.api.IParticleComponent;
 import org.mesdag.particlestorm.api.IntAllocator;
 import org.mesdag.particlestorm.data.DefinedParticleEffect;
-import org.mesdag.particlestorm.network.EmitterRemovalPacket;
-import org.mesdag.particlestorm.network.EmitterSynchronizePacket;
+import org.mesdag.particlestorm.mixed.ITextureAtlas;
+import org.mesdag.particlestorm.mixin.ParticleEngineAccessor;
+import org.redlance.dima_dencep.mods.particletsunami.ParticleTsunamiMod;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -41,8 +38,8 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
-@OnlyIn(Dist.CLIENT)
 public class MolangParticleLoader implements PreparableReloadListener {
+    public static final ResourceLocation RELOADER_ID = ResourceLocation.fromNamespaceAndPath(ParticleTsunamiMod.MODID, "reloader");
     private static final FileToIdConverter PARTICLE_LISTER = FileToIdConverter.json("particle_definitions");
     public final Map<ResourceLocation, DefinedParticleEffect> ID_2_EFFECT = new Hashtable<>();
     public final Map<ResourceLocation, ParticleDetail> ID_2_PARTICLE = new Hashtable<>();
@@ -94,37 +91,35 @@ public class MolangParticleLoader implements PreparableReloadListener {
         return emitters.size();
     }
 
-    public void loadEmitter(Level level, int id, CompoundTag tag) {
+    /*public void loadEmitter(Level level, int id, CompoundTag tag) {
         ParticleEmitter emitter = new ParticleEmitter(level, tag);
         emitter.id = id;
         emitters.put(id, emitter);
         if (allocator.forceAllocate(id)) {
-            ParticleStorm.LOGGER.warn("There was an emitter exist before, now replaced");
+            ParticleTsunamiMod.LOGGER.warn("There was an emitter exist before, now replaced");
         }
-    }
+    }*/
 
-    public void addEmitter(ParticleEmitter emitter, boolean sync) {
+    public void addEmitter(ParticleEmitter emitter) {
         emitter.id = allocator.allocate();
         emitters.put(emitter.id, emitter);
-        if (sync) EmitterSynchronizePacket.syncToServer(emitter);
     }
 
     public void addTrackedEmitter(Entity entity, ParticleEmitter emitter) {
-        addEmitter(emitter, false);
+        addEmitter(emitter);
         tracker.computeIfAbsent(entity, e -> EvictingQueue.create(16)).add(emitter);
     }
 
-    public void removeEmitter(ParticleEmitter emitter, boolean sync) {
-        removeEmitter(emitter.id, sync);
+    public void removeEmitter(ParticleEmitter emitter) {
+        removeEmitter(emitter.id);
     }
 
-    public ParticleEmitter removeEmitter(int id, boolean sync) {
+    public ParticleEmitter removeEmitter(int id) {
         ParticleEmitter removed = emitters.remove(id);
         if (removed != null) {
             removed.onRemove();
         }
-        allocator.release(id);
-        if (sync) EmitterRemovalPacket.sendToServer(id);
+        allocator.release(id, removed != null);
         return removed;
     }
 
@@ -142,7 +137,7 @@ public class MolangParticleLoader implements PreparableReloadListener {
     }
 
     @Override
-    public @NotNull CompletableFuture<Void> reload(PreparationBarrier preparationBarrier, @NotNull ResourceManager resourceManager, @NotNull ProfilerFiller preparationsProfiler, @NotNull ProfilerFiller reloadProfiler, @NotNull Executor backgroundExecutor, @NotNull Executor gameExecutor) {
+    public @NotNull CompletableFuture<Void> reload(PreparationBarrier preparationBarrier, ResourceManager resourceManager, Executor backgroundExecutor, Executor gameExecutor) {
         return CompletableFuture.supplyAsync(() -> PARTICLE_LISTER.listMatchingResources(resourceManager), backgroundExecutor).thenCompose(map -> {
             List<CompletableFuture<DefinedParticleEffect>> list = new ArrayList<>(map.size());
             map.forEach((file, resource) -> {
@@ -170,6 +165,22 @@ public class MolangParticleLoader implements PreparableReloadListener {
                         effect.events
                 ));
             });
+
+            ParticleEngine particleEngine = Minecraft.getInstance().particleEngine;
+            if (((ParticleEngineAccessor) particleEngine).spriteSets().get(ParticleTsunamiMod.MOLANG_PARTICLE) instanceof ExtendMutableSpriteSet spriteSet) {
+                ((ITextureAtlas) ((ParticleEngineAccessor) particleEngine).textureAtlas()).particlestorm$consume(preparations -> {
+                    spriteSet.clear();
+                    int i = 0;
+                    for (Map.Entry<ResourceLocation, DefinedParticleEffect> entry : ParticleTsunamiMod.LOADER.ID_2_EFFECT.entrySet()) {
+                        TextureAtlasSprite missing = preparations.missing();
+                        spriteSet.bindMissing(missing);
+                        ResourceLocation texture = entry.getValue().description.parameters().bindTexture(i);
+                        TextureAtlasSprite sprite = preparations.regions().get(texture);
+                        spriteSet.addSprite(sprite == null ? missing : sprite);
+                        i++;
+                    }
+                });
+            }
         }, gameExecutor);
     }
 }

@@ -9,5 +9,6 @@ public interface IParticleKeyframeData {
 
     MolangExp particlestorm$getExpression(VariableTable variableTable);
 
-    int[] particlestorm$getCachedId(int size);
+    void particlestorm$setCachedId(int id);
+    int particlestorm$getCachedId();
 }

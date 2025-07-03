@@ -14,28 +14,25 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
-import net.neoforged.fml.ModList;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
-import org.mesdag.particlestorm.PSGameClient;
 import org.mesdag.particlestorm.api.IEventNode;
 import org.mesdag.particlestorm.api.IParticleComponent;
 import org.mesdag.particlestorm.api.MolangInstance;
 import org.mesdag.particlestorm.data.component.ParticleMotionCollision;
 import org.mesdag.particlestorm.data.molang.VariableTable;
 import org.mesdag.particlestorm.mixed.ITextureAtlasSprite;
+import org.redlance.dima_dencep.mods.particletsunami.ParticleTsunamiMod;
+import org.redlance.dima_dencep.mods.particletsunami.ParticleTsunamiPlatform;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-@OnlyIn(Dist.CLIENT)
 public class MolangParticleInstance extends TextureSheetParticle implements MolangInstance {
     public static final int FULL_LIGHT = 0xF000F0;
-    private static final boolean isSodiumLoaded = ModList.get().isLoaded("sodium");
+    private static final boolean IS_SODIUM_LOADED = ParticleTsunamiPlatform.hasSodium();
 
     public final RandomSource random;
     public final ParticleDetail detail;
@@ -203,7 +200,7 @@ public class MolangParticleInstance extends TextureSheetParticle implements Mola
 
     @Override
     public Vec3 getPosition() {
-        return getPos();
+        return new Vec3(x, y, z);
     }
 
     @Override
@@ -274,7 +271,7 @@ public class MolangParticleInstance extends TextureSheetParticle implements Mola
 
     @Override
     protected void renderRotatedQuad(@NotNull VertexConsumer buffer, @NotNull Quaternionf quaternion, float x, float y, float z, float partialTicks) {
-        if (isSodiumLoaded) {
+        if (IS_SODIUM_LOADED) {
             float f1 = getU0();
             float f2 = getU1();
             float f3 = getV0();
@@ -397,7 +394,7 @@ public class MolangParticleInstance extends TextureSheetParticle implements Mola
 
         @Override
         public TextureSheetParticle createParticle(@NotNull MolangParticleOption option, @NotNull ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
-            return new MolangParticleInstance(PSGameClient.LOADER.ID_2_PARTICLE.get(option.getId()), level, x, y, z, sprites);
+            return new MolangParticleInstance(ParticleTsunamiMod.LOADER.ID_2_PARTICLE.get(option.getId()), level, x, y, z, sprites);
         }
     }
 }

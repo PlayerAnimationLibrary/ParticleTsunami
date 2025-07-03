@@ -2,7 +2,6 @@ package org.mesdag.particlestorm.particle;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -13,7 +12,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
-import org.mesdag.particlestorm.PSGameClient;
 import org.mesdag.particlestorm.api.IEmitterComponent;
 import org.mesdag.particlestorm.api.MolangInstance;
 import org.mesdag.particlestorm.data.MathHelper;
@@ -25,6 +23,7 @@ import org.mesdag.particlestorm.data.molang.VariableTable;
 import org.mesdag.particlestorm.data.molang.compiler.MathValue;
 import org.mesdag.particlestorm.data.molang.compiler.MolangParser;
 import org.mesdag.particlestorm.data.molang.compiler.value.VariableAssignment;
+import org.redlance.dima_dencep.mods.particletsunami.ParticleTsunamiMod;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -91,11 +90,11 @@ public class ParticleEmitter implements MolangInstance {
         this(level, pos, particleId, ParticleEffect.Type.EMITTER, MolangExp.EMPTY);
     }
 
-    public ParticleEmitter(Level level, CompoundTag tag) {
+    /*public ParticleEmitter(Level level, CompoundTag tag) {
         this.level = level;
         deserialize(tag);
         this.invTickRate = 1.0F / level.tickRateManager().tickrate();
-    }
+    }*/
 
     public synchronized void updateRandoms(RandomSource random) {
         this.emitterRandom1 = random.nextDouble();
@@ -108,11 +107,9 @@ public class ParticleEmitter implements MolangInstance {
         if (initialized) {
             baseTick();
         } else if (particleId != null) {
-            this.detail = PSGameClient.LOADER.ID_2_EMITTER.get(particleId);
+            this.detail = ParticleTsunamiMod.LOADER.ID_2_EMITTER.get(particleId);
             if (detail == null) {
-                if (Minecraft.getInstance().player != null) {
-                    Minecraft.getInstance().player.sendSystemMessage(Component.translatable("particle.notFound", particleId.toString()));
-                }
+                Minecraft.getInstance().gui.getChat().addMessage(Component.translatable("particle.notFound", particleId.toString()));
                 remove();
                 return;
             }
@@ -219,7 +216,7 @@ public class ParticleEmitter implements MolangInstance {
         return detail;
     }
 
-    public void deserialize(CompoundTag compound) {
+    /*public void deserialize(CompoundTag compound) {
         this.particleId = ResourceLocation.parse(compound.getString("particleId"));
         this.effectType = ParticleEffect.Type.getById(compound.getInt("effectType"));
         this.expression = new MolangExp(compound.getString("expression"));
@@ -249,7 +246,7 @@ public class ParticleEmitter implements MolangInstance {
         compound.putDouble("movX", posO.x);
         compound.putDouble("movY", posO.y);
         compound.putDouble("movZ", posO.z);
-    }
+    }*/
 
     public double getX() {
         return pos.x;

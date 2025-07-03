@@ -1,1 +1,9 @@
 accessWidener v1 named
+accessible field net/minecraft/client/particle/Particle stoppedByCollision Z
+accessible field net/minecraft/client/particle/Particle MAXIMUM_COLLISION_VELOCITY_SQUARED D
+accessible class net/minecraft/client/particle/ParticleEngine$MutableSpriteSet
+extendable class net/minecraft/client/particle/ParticleEngine$MutableSpriteSet
+extendable method net/minecraft/client/particle/SingleQuadParticle renderVertex (Lcom/mojang/blaze3d/vertex/VertexConsumer;Lorg/joml/Quaternionf;FFFFFFFFI)V
+accessible method net/minecraft/client/particle/Particle setLocationFromBoundingbox ()V
+accessible field net/minecraft/client/particle/ParticleEngine$MutableSpriteSet sprites Ljava/util/List;
+accessible method net/minecraft/client/particle/ParticleEngine$MutableSpriteSet <init> ()V

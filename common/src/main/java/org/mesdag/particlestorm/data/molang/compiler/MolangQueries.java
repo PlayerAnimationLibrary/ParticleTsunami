@@ -5,6 +5,7 @@ import net.minecraft.client.Minecraft;
 import org.mesdag.particlestorm.PSGameClient;
 import org.mesdag.particlestorm.data.molang.compiler.value.Variable;
 import org.mesdag.particlestorm.mixin.ParticleEngineAccessor;
+import org.redlance.dima_dencep.mods.particletsunami.ParticleTsunamiMod;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -55,7 +56,7 @@ public final class MolangQueries {
         getQueryFor("query.player_level").set(p -> Minecraft.getInstance().player == null ? 0.0 : Minecraft.getInstance().player.experienceLevel);
         getQueryFor("query.time_of_day").set(p -> p.getLevel().getDayTime() / 24000f);
         getQueryFor("query.time_stamp").set(p -> p.getLevel().getGameTime());
-        getQueryFor("query.total_emitter_count").set(p -> PSGameClient.LOADER.totalEmitterCount());
+        getQueryFor("query.total_emitter_count").set(p -> ParticleTsunamiMod.LOADER.totalEmitterCount());
         getQueryFor("query.total_particle_count").set(p -> {
             int sum = 0;
             for (Integer value : ((ParticleEngineAccessor) Minecraft.getInstance().particleEngine).trackedParticleCounts().values()) {

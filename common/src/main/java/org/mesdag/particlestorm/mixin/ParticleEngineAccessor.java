@@ -3,7 +3,6 @@ package org.mesdag.particlestorm.mixin;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleEngine;
-import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.core.particles.ParticleGroup;
 import net.minecraft.core.particles.ParticleOptions;
@@ -18,9 +17,6 @@ import java.util.Map;
 public interface ParticleEngineAccessor {
     @Accessor("spriteSets")
     Map<ResourceLocation, ParticleEngine.MutableSpriteSet> spriteSets();
-
-    @Accessor("providers")
-    Map<ResourceLocation, ParticleProvider<?>> providers();
 
     @Accessor("textureAtlas")
     TextureAtlas textureAtlas();

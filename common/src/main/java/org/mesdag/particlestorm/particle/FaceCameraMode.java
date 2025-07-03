@@ -3,14 +3,11 @@ package org.mesdag.particlestorm.particle;
 import net.minecraft.client.Camera;
 import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.util.Mth;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.mesdag.particlestorm.data.MathHelper;
 
-@OnlyIn(Dist.CLIENT)
 public enum FaceCameraMode implements SingleQuadParticle.FacingCameraMode {
     LOOKAT_XYZ {
         private final Vector3f wd = new Vector3f();

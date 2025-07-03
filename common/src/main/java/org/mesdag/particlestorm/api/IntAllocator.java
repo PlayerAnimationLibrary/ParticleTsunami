@@ -1,6 +1,7 @@
 package org.mesdag.particlestorm.api;
 
-import org.mesdag.particlestorm.ParticleStorm;
+import org.jetbrains.annotations.ApiStatus;
+import org.redlance.dima_dencep.mods.particletsunami.ParticleTsunamiMod;
 
 import java.util.HashSet;
 import java.util.PriorityQueue;
@@ -29,11 +30,16 @@ public class IntAllocator {
     }
 
     public void release(int id) {
+        release(id, true);
+    }
+
+    @ApiStatus.Internal
+    public void release(int id, boolean warn) {
         if (usedIds.contains(id)) {
             usedIds.remove(id);
             availableIds.offer(id);
-        } else {
-            ParticleStorm.LOGGER.warn("ID {} is not currently allocated.", id);
+        } else if (warn) {
+            ParticleTsunamiMod.LOGGER.warn("ID {} is not currently allocated.", id);
         }
     }
 

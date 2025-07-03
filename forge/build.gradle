@@ -42,6 +42,7 @@ shadowJar {
 
     configurations = [project.configurations.shadowCommon]
     archiveClassifier.set "dev-shadow"
+    relocate 'team.unnamed.mocha', 'com.zigythebird.playeranim.lib.mochafloats'
 }
 
 remapJar {
