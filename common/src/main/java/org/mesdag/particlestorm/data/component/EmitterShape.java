@@ -102,6 +102,7 @@ public abstract sealed class EmitterShape implements IEmitterComponent permits E
             if (emitter.getDetail().localPosition) {
                 Vec3 emitterPos = emitter.getPosition();
                 position.add((float) emitterPos.x, (float) emitterPos.y, (float) emitterPos.z);
+                instance.oldEmitterPos = emitterPos;
             }
             speed.mul(emitter.invTickRate);
             if (emitter.attached != null && emitter.getDetail().localVelocity) {

@@ -23,7 +23,7 @@ public class EmitterDetail {
     public final VariableTable variableTable;
     public final List<VariableAssignment> assignments;
     public EmitterRate.Type emitterRateType = EmitterRate.Type.MANUAL;
-    public boolean localPosition = false;
+    public final boolean localPosition = true;
     public boolean localRotation = false;
     public boolean localVelocity = false;
     public EmitterLifetimeEvents lifetimeEvents;
@@ -56,10 +56,10 @@ public class EmitterDetail {
             } else if (component instanceof EmitterShape) {
                 if (shape) throw new IllegalArgumentException("Duplicate emitter shape component");
                 else shape = true;
-            } else if (component instanceof EmitterLocalSpace localSpace) {
-                this.localPosition = localSpace.position();
-                this.localRotation = localSpace.rotation();
-                this.localVelocity = localSpace.velocity();
+            } else if (component instanceof EmitterLocalSpace(boolean position, boolean rotation, boolean velocity)) {
+                // this.localPosition = position;
+                this.localRotation = rotation;
+                this.localVelocity = velocity;
             } else if (component instanceof EmitterLifetimeEvents e) {
                 this.lifetimeEvents = e;
             }
