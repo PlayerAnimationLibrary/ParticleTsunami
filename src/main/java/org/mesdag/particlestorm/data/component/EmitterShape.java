@@ -20,7 +20,6 @@ import org.mesdag.particlestorm.data.MathHelper;
 import org.mesdag.particlestorm.data.molang.FloatMolangExp;
 import org.mesdag.particlestorm.data.molang.FloatMolangExp3;
 import org.mesdag.particlestorm.data.molang.MolangExp;
-import org.mesdag.particlestorm.mixin.ParticleEngineAccessor;
 import org.mesdag.particlestorm.particle.MolangParticleInstance;
 import org.mesdag.particlestorm.particle.ParticleEmitter;
 import org.mesdag.particlestorm.particle.ParticlePreset;
@@ -69,7 +68,10 @@ public abstract sealed class EmitterShape implements IEmitterComponent permits E
     }
 
     private void emittingParticle(ParticleEmitter emitter) {
-        MolangParticleInstance instance = (MolangParticleInstance) ((ParticleEngineAccessor) Minecraft.getInstance().particleEngine).callMakeParticle(emitter.getPreset().option, emitter.getX(), emitter.getY(), emitter.getZ(), 0.0, 0.0, 0.0);
+        MolangParticleInstance instance = (MolangParticleInstance) Minecraft.getInstance().particleEngine.makeParticle(
+                emitter.getPreset().option, emitter.getX(), emitter.getY(), emitter.getZ(), 0.0, 0.0, 0.0
+        );
+        if (instance == null) throw new NullPointerException("Failed to create particle!");
         instance.setEmitter(emitter);
 
         ParticlePreset preset = instance.preset;
@@ -121,7 +123,7 @@ public abstract sealed class EmitterShape implements IEmitterComponent permits E
 
     private static boolean hasSpaceInParticleLimit(ParticleEmitter emitter) {
         ParticleGroup particleGroup = emitter.particleGroup;
-        return ((ParticleEngineAccessor) Minecraft.getInstance().particleEngine).trackedParticleCounts().getInt(particleGroup) < particleGroup.getLimit();
+        return Minecraft.getInstance().particleEngine.trackedParticleCounts.getInt(particleGroup) < particleGroup.getLimit();
     }
 
     /**

@@ -1,9 +1,7 @@
 package org.mesdag.particlestorm.particle;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -117,11 +115,7 @@ public class ParticleEmitter implements MolangInstance {
     private void init() {
         this.preset = PSGameClient.LOADER.id2Emitter().get(particleId);
         if (preset == null) {
-            if (Minecraft.getInstance().player != null) {
-                Minecraft.getInstance().player.sendSystemMessage(Component.translatable("particle.notFound", particleId.toString()));
-            }
-            remove();
-            return;
+            throw new IllegalArgumentException("Unknown particle id: '" + particleId + "'!");
         }
         this.vars = new VariableTable(preset.vars);
         if (expression != null && !expression.initialized()) {

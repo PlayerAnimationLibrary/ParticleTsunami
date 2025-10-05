@@ -14,11 +14,8 @@ import java.util.Map;
 
 public class MolangExp {
     public static final MolangExp EMPTY = Util.make(new MolangExp(""), exp -> exp.variable = new Constant(0.0));
-    public static final Codec<MolangExp> CODEC = Codec.STRING.xmap(MolangExp::new, e -> e.expStr);
-    public static final StreamCodec<ByteBuf, MolangExp> STREAM_CODEC = StreamCodec.composite(
-            ByteBufCodecs.STRING_UTF8, e -> e.expStr,
-            MolangExp::new
-    );
+    public static final Codec<MolangExp> CODEC = Codec.STRING.xmap(MolangExp::new, MolangExp::getExpStr);
+    public static final StreamCodec<ByteBuf, MolangExp> STREAM_CODEC = ByteBufCodecs.STRING_UTF8.map(MolangExp::new, MolangExp::getExpStr);
     protected final String expStr;
     protected MathValue variable;
 

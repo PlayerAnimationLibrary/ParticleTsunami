@@ -40,6 +40,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
+@SuppressWarnings("all")
 public class MolangParticleLoader implements PreparableReloadListener {
     private static final FileToIdConverter PARTICLE_LISTER = FileToIdConverter.json("particle_definitions");
     private Map<ResourceLocation, DefinedParticleEffect> id2Effect = new Hashtable<>();
@@ -120,9 +121,14 @@ public class MolangParticleLoader implements PreparableReloadListener {
         if (sync) EmitterSynchronizePacket.syncToServer(emitter);
     }
 
-    public void addTrackedEmitter(Entity entity, ParticleEmitter emitter) {
+    public boolean addTrackedEmitter(Entity entity, ResourceLocation particleId) {
+        EvictingQueue<ParticleEmitter> queue = tracker.computeIfAbsent(entity, e -> EvictingQueue.create(16));
+        if (!queue.isEmpty() && queue.stream().anyMatch(emitter -> particleId.equals(emitter.particleId))) return false;
+        ParticleEmitter emitter = new ParticleEmitter(entity.level(), entity.position(), particleId);
         addEmitter(emitter, false);
-        tracker.computeIfAbsent(entity, e -> EvictingQueue.create(16)).add(emitter);
+        emitter.attachEntity(entity);
+        queue.add(emitter);
+        return true;
     }
 
     public void removeEmitter(ParticleEmitter emitter, boolean sync) {

@@ -32,7 +32,6 @@ import org.mesdag.particlestorm.api.geckolib.ExampleBlockEntityRenderer;
 import org.mesdag.particlestorm.api.geckolib.ReplacedCreeperRenderer;
 import org.mesdag.particlestorm.data.component.*;
 import org.mesdag.particlestorm.data.event.*;
-import org.mesdag.particlestorm.mixin.ParticleEngineAccessor;
 import org.mesdag.particlestorm.particle.MolangParticleLoader;
 import org.mesdag.particlestorm.particle.ParticleEmitter;
 
@@ -98,14 +97,13 @@ public final class PSGameClient {
             PoseStack poseStack = event.getPoseStack();
             MultiBufferSource.BufferSource bufferSource = minecraft.renderBuffers().bufferSource();
             for (ParticleEmitter emitter : LOADER.emitters.values()) {
-                if (emitter.isRemoved()) continue;
                 double x = Mth.lerp(partialTicks, emitter.posO.x, emitter.pos.x);
                 double y = Mth.lerp(partialTicks, emitter.posO.y, emitter.pos.y);
                 double z = Mth.lerp(partialTicks, emitter.posO.z, emitter.pos.z);
                 DebugRenderer.renderFloatingText(poseStack, bufferSource, emitter.getPreset().option.getId().toString(), x, y + 0.5, z, 0xFFFFFF);
                 DebugRenderer.renderFloatingText(poseStack, bufferSource, "id: " + emitter.id, x, y + 0.3, z, 0xFFFFFF);
-                int maxNum = ((ParticleEngineAccessor) minecraft.particleEngine).trackedParticleCounts().getInt(emitter.particleGroup);
-                DebugRenderer.renderFloatingText(poseStack, bufferSource, "particles: " + maxNum, x, y + 0.1, z, maxNum == emitter.particleGroup.getLimit() ? 0xFF0000 : 0xFFFFFF);
+                int maxNum = minecraft.particleEngine.trackedParticleCounts.getInt(emitter.particleGroup);
+                DebugRenderer.renderFloatingText(poseStack, bufferSource, "particles: " + maxNum, x, y + 0.1, z, maxNum >= emitter.particleGroup.getLimit() ? 0xFF0000 : 0xFFFFFF);
                 Camera camera = event.getCamera();
                 double d0 = camera.getPosition().x;
                 double d1 = camera.getPosition().y;

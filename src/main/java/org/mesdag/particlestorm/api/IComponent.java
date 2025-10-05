@@ -23,6 +23,9 @@ public interface IComponent {
 
     List<MolangExp> getAllMolangExp();
 
+    /**
+     * 小于0表示早期初始化
+     */
     default int order() {
         return 1000;
     }

@@ -7,7 +7,6 @@ import org.mesdag.particlestorm.PSGameClient;
 import org.mesdag.particlestorm.api.MolangInstance;
 import org.mesdag.particlestorm.api.RegisterMolangQueriesEvent;
 import org.mesdag.particlestorm.data.molang.compiler.value.Variable;
-import org.mesdag.particlestorm.mixin.ParticleEngineAccessor;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -82,7 +81,7 @@ public final class MolangQueries {
         registerQueryVariable("query.total_emitter_count", p -> PSGameClient.LOADER.totalEmitterCount());
         registerQueryVariable("query.total_particle_count", p -> {
             int sum = 0;
-            for (Integer value : ((ParticleEngineAccessor) Minecraft.getInstance().particleEngine).trackedParticleCounts().values()) {
+            for (Integer value : Minecraft.getInstance().particleEngine.trackedParticleCounts.values()) {
                 sum += value;
             }
             return sum;

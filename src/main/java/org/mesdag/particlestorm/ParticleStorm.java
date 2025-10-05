@@ -3,10 +3,10 @@ package org.mesdag.particlestorm;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -47,18 +47,18 @@ public final class ParticleStorm {
     public static final boolean DEBUG = Boolean.getBoolean("particlestorm.debug");
 
     public static final DeferredRegister<ParticleType<?>> PARTICLE = DeferredRegister.create(BuiltInRegistries.PARTICLE_TYPE, MODID);
-    public static final DeferredHolder<ParticleType<?>, ParticleType<MolangParticleOption>> MOLANG = PARTICLE.register("molang", () -> new ParticleType<MolangParticleOption>(false) {
+    public static final DeferredHolder<ParticleType<?>, ParticleType<MolangParticleOption>> MOLANG = PARTICLE.register("molang", () -> new ParticleType<>(false) {
         @Override
         public @NotNull MapCodec<MolangParticleOption> codec() {
-            return MolangParticleOption.codec(this);
+            return MolangParticleOption.CODEC;
         }
 
         @Override
-        public @NotNull StreamCodec<? super RegistryFriendlyByteBuf, MolangParticleOption> streamCodec() {
-            return MolangParticleOption.streamCodec(this);
+        public @NotNull StreamCodec<ByteBuf, MolangParticleOption> streamCodec() {
+            return MolangParticleOption.STREAM_CODEC;
         }
     });
-    public static final Codec<List<String>> STRING_LIST_CODEC = Codec.either(Codec.STRING, Codec.list(Codec.STRING)).xmap(
+    public static final Codec<List<String>> STRING_LIST_CODEC = Codec.either(Codec.STRING, Codec.STRING.listOf()).xmap(
             either -> either.map(Collections::singletonList, Function.identity()),
             l -> l.size() == 1 ? Either.left(l.getFirst()) : Either.right(l)
     );
@@ -75,26 +75,10 @@ public final class ParticleStorm {
 
     private static void registerPayloadHandlers(RegisterPayloadHandlersEvent event) {
         PayloadRegistrar registrar = event.registrar("1");
-        registrar.playToClient(
-                EmitterCreationPacketS2C.TYPE,
-                EmitterCreationPacketS2C.STREAM_CODEC,
-                EmitterCreationPacketS2C::handle
-        );
-        registrar.playToClient(
-                EmitterAttachPacketS2C.TYPE,
-                EmitterAttachPacketS2C.STREAM_CODEC,
-                EmitterAttachPacketS2C::handle
-        );
-        registrar.playBidirectional(
-                EmitterRemovalPacket.TYPE,
-                EmitterRemovalPacket.STREAM_CODEC,
-                EmitterRemovalPacket::handle
-        );
-        registrar.playBidirectional(
-                EmitterSynchronizePacket.TYPE,
-                EmitterSynchronizePacket.STREAM_CODEC,
-                EmitterSynchronizePacket::handle
-        );
+        registrar.playToClient(EmitterCreationPacketS2C.TYPE, EmitterCreationPacketS2C.STREAM_CODEC, EmitterCreationPacketS2C::handle);
+        registrar.playToClient(EmitterAttachPacketS2C.TYPE, EmitterAttachPacketS2C.STREAM_CODEC, EmitterAttachPacketS2C::handle);
+        registrar.playBidirectional(EmitterRemovalPacket.TYPE, EmitterRemovalPacket.STREAM_CODEC, EmitterRemovalPacket::handle);
+        registrar.playBidirectional(EmitterSynchronizePacket.TYPE, EmitterSynchronizePacket.STREAM_CODEC, EmitterSynchronizePacket::handle);
     }
 
     private static void registerCommands(RegisterCommandsEvent event) {
