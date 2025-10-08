@@ -15,7 +15,6 @@ import org.mesdag.particlestorm.particle.ParticleEmitter;
 import software.bernie.geckolib.animatable.GeoAnimatable;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.keyframe.event.ParticleKeyframeEvent;
 import software.bernie.geckolib.animation.keyframe.event.data.ParticleKeyframeData;
 import software.bernie.geckolib.cache.object.GeoBone;
 import software.bernie.geckolib.loading.json.raw.LocatorValue;
@@ -42,18 +41,17 @@ public final class GeckoLibHelper {
     /**
      * @return true means failed to add emitter
      */
-    public static boolean processParticleEffect(Object particleKeyframeEvent) {
-        ParticleKeyframeEvent<?> event = (ParticleKeyframeEvent<?>) particleKeyframeEvent;
-        List<GeoBone> bones = ((IAnimationController) event.getController()).particlestorm$getBonesWhichHasLocators();
+    public static boolean processParticleEffect(Object a, Object c, Object d) {
+        List<GeoBone> bones = IAnimationController.of((AnimationController<?>) c).particlestorm$getBonesWhichHasLocators();
         if (bones.isEmpty()) return true;
 
-        ParticleKeyframeData keyframeData = event.getKeyframeData();
+        ParticleKeyframeData keyframeData = (ParticleKeyframeData) d;
         IParticleKeyframeData iData = (IParticleKeyframeData) keyframeData;
         Entity entity = null;
         BlockEntity blockEntity = null;
         VariableTable variableTable;
         Level level;
-        GeoAnimatable animatable = event.getAnimatable();
+        GeoAnimatable animatable = (GeoAnimatable) a;
         switch (animatable) {
             case Entity entity1 -> {
                 entity = entity1;
@@ -108,8 +106,8 @@ public final class GeckoLibHelper {
         }
     }
 
-    public static void removeEmittersWhenAnimationChange(int size, Object animationState, Object animatableInstanceCache) {
-        if (size > 0 && animationState == AnimationController.State.TRANSITIONING) {
+    public static void removeEmittersWhenAnimationChange(Object animationState, Object animatableInstanceCache) {
+        if (animationState == AnimationController.State.TRANSITIONING) {
             IntIterator iterator = IAnimatableInstanceCache.of((AnimatableInstanceCache) animatableInstanceCache).particlestorm$getCachedId().values().iterator();
             while (iterator.hasNext()) {
                 PSGameClient.LOADER.removeEmitter(iterator.nextInt(), false);
