@@ -46,7 +46,7 @@ public class MolangParticleLoader implements PreparableReloadListener {
     private Map<ResourceLocation, DefinedParticleEffect> id2Effect = new Hashtable<>();
     private Map<ResourceLocation, ParticlePreset> id2Particle = new Hashtable<>();
     private Map<ResourceLocation, EmitterPreset> id2Emitter = new Hashtable<>();
-    public final Int2ObjectMap<ParticleEmitter> emitters = new Int2ObjectOpenHashMap<>();
+    private final Int2ObjectOpenHashMap<ParticleEmitter> emitters = new Int2ObjectOpenHashMap<>();
     private final Object2ObjectMap<Entity, EvictingQueue<ParticleEmitter>> tracker = new Object2ObjectOpenHashMap<>();
     private final IntAllocator allocator = new IntAllocator();
 
@@ -65,33 +65,7 @@ public class MolangParticleLoader implements PreparableReloadListener {
     }
 
     public void tick(LocalPlayer localPlayer) {
-        if (initialized) {
-            if (!emitters.isEmpty()) {
-                int renderDistSqr = Mth.square(Minecraft.getInstance().options.renderDistance().get() * 16);
-                ObjectIterator<Int2ObjectMap.Entry<ParticleEmitter>> iterator = emitters.int2ObjectEntrySet().iterator();
-                while (iterator.hasNext()) {
-                    ParticleEmitter emitter = iterator.next().getValue();
-                    if (emitter.isRemoved() || emitter.level.dimension() != localPlayer.level().dimension()) {
-                        emitter.onRemove();
-                        allocator.release(emitter.id);
-                        iterator.remove();
-                    } else if (Mth.square(emitter.pos.x - localPlayer.getX()) + Mth.square(emitter.pos.z - localPlayer.getZ()) < renderDistSqr) {
-                        emitter.tick();
-                    }
-                }
-            }
-            if (!tracker.isEmpty()) {
-                ObjectIterator<Map.Entry<Entity, EvictingQueue<ParticleEmitter>>> iterator1 = tracker.entrySet().iterator();
-                while (iterator1.hasNext()) {
-                    Map.Entry<Entity, EvictingQueue<ParticleEmitter>> entry = iterator1.next();
-                    if (entry.getKey().isRemoved()) {
-                        iterator1.remove();
-                    } else if (entry.getValue().removeIf(ParticleEmitter::isRemoved) && entry.getValue().isEmpty()) {
-                        iterator1.remove();
-                    }
-                }
-            }
-        } else {
+        if (!initialized) {
             for (ParticlePreset detail : id2Particle.values()) {
                 for (IParticleComponent component : detail.effect.orderedParticleComponents) {
                     component.initialize(localPlayer.level());
@@ -100,6 +74,45 @@ public class MolangParticleLoader implements PreparableReloadListener {
             removeAll();
             this.initialized = true;
         }
+        if (!emitters.isEmpty()) {
+            int renderDistSqr = Mth.square(Minecraft.getInstance().options.renderDistance().get() * 16);
+            ObjectIterator<Int2ObjectMap.Entry<ParticleEmitter>> iterator = emitters.int2ObjectEntrySet().fastIterator();
+            while (iterator.hasNext()) {
+                ParticleEmitter emitter = iterator.next().getValue();
+                try {
+                    if (emitter.isRemoved() || emitter.level.dimension() != localPlayer.level().dimension()) {
+                        allocator.release(emitter.id);
+                        emitter.onRemove();
+                        emitter.remove();
+                        iterator.remove();
+                    } else if (Mth.square(emitter.pos.x - localPlayer.getX()) + Mth.square(emitter.pos.z - localPlayer.getZ()) < renderDistSqr) {
+                        emitter.tick();
+                    }
+                } catch (Exception e) {
+                    ParticleStorm.LOGGER.warn("Error ticking: {}", e.getMessage());
+                    e.printStackTrace();
+                    if (emitter != null) {
+                        emitter.remove();
+                    }
+                    iterator.remove();
+                }
+            }
+        }
+        if (!tracker.isEmpty()) {
+            ObjectIterator<Map.Entry<Entity, EvictingQueue<ParticleEmitter>>> iterator1 = tracker.entrySet().iterator();
+            while (iterator1.hasNext()) {
+                Map.Entry<Entity, EvictingQueue<ParticleEmitter>> entry = iterator1.next();
+                if (entry.getKey().isRemoved()) {
+                    iterator1.remove();
+                } else if (entry.getValue().removeIf(ParticleEmitter::isRemoved) && entry.getValue().isEmpty()) {
+                    iterator1.remove();
+                }
+            }
+        }
+    }
+
+    public Iterable<ParticleEmitter> getEmitters() {
+        return emitters.values();
     }
 
     public int totalEmitterCount() {

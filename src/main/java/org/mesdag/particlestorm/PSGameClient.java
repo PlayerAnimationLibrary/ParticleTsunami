@@ -96,7 +96,7 @@ public final class PSGameClient {
             float partialTicks = event.getPartialTick().getGameTimeDeltaPartialTick(true);
             PoseStack poseStack = event.getPoseStack();
             MultiBufferSource.BufferSource bufferSource = minecraft.renderBuffers().bufferSource();
-            for (ParticleEmitter emitter : LOADER.emitters.values()) {
+            for (ParticleEmitter emitter : LOADER.getEmitters()) {
                 double x = Mth.lerp(partialTicks, emitter.posO.x, emitter.pos.x);
                 double y = Mth.lerp(partialTicks, emitter.posO.y, emitter.pos.y);
                 double z = Mth.lerp(partialTicks, emitter.posO.z, emitter.pos.z);
