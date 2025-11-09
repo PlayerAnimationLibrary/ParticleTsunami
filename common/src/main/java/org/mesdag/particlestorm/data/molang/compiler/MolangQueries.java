@@ -2,9 +2,7 @@ package org.mesdag.particlestorm.data.molang.compiler;
 
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
-import org.mesdag.particlestorm.PSGameClient;
 import org.mesdag.particlestorm.data.molang.compiler.value.Variable;
-import org.mesdag.particlestorm.mixin.ParticleEngineAccessor;
 import org.redlance.dima_dencep.mods.particletsunami.ParticleTsunamiMod;
 
 import java.util.Map;
@@ -49,7 +47,7 @@ public final class MolangQueries {
     private static void setDefaultQueryValues() {
         getQueryFor("query.cardinal_player_facing").set(p -> Minecraft.getInstance().player == null ? 0.0 : Minecraft.getInstance().player.getDirection().ordinal());
         getQueryFor("query.day").set(p -> p.getLevel().getGameTime() / 24000d);
-        getQueryFor("query.has_cape").set(p -> Minecraft.getInstance().player == null ? 0.0 : Minecraft.getInstance().player.getSkin().capeTexture() == null ? 0 : 1);
+        // getQueryFor("query.has_cape").set(p -> Minecraft.getInstance().player == null ? 0.0 : Minecraft.getInstance().player.getSkin().capeTexture() == null ? 0 : 1);
         getQueryFor("query.is_first_person").set(p -> Minecraft.getInstance().options.getCameraType() == CameraType.FIRST_PERSON ? 1 : 0);
         getQueryFor("query.moon_brightness").set(p -> p.getLevel().getMoonBrightness());
         getQueryFor("query.moon_phase").set(p -> p.getLevel().getMoonPhase());
@@ -59,7 +57,7 @@ public final class MolangQueries {
         getQueryFor("query.total_emitter_count").set(p -> ParticleTsunamiMod.LOADER.totalEmitterCount());
         getQueryFor("query.total_particle_count").set(p -> {
             int sum = 0;
-            for (Integer value : ((ParticleEngineAccessor) Minecraft.getInstance().particleEngine).trackedParticleCounts().values()) {
+            for (Integer value : Minecraft.getInstance().particleEngine.trackedParticleCounts.values()) {
                 sum += value;
             }
             return sum;

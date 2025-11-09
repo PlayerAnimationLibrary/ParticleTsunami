@@ -5,7 +5,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
-import net.minecraft.core.particles.ParticleGroup;
+import net.minecraft.core.particles.ParticleLimit;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
@@ -126,8 +126,8 @@ public abstract sealed class EmitterShape implements IEmitterComponent permits E
     }
 
     private static boolean hasSpaceInParticleLimit(ParticleEmitter emitter) {
-        ParticleGroup particleGroup = emitter.particleGroup;
-        return ((ParticleEngineAccessor) Minecraft.getInstance().particleEngine).trackedParticleCounts().getInt(particleGroup) < particleGroup.getLimit();
+        ParticleLimit particleGroup = emitter.particleGroup;
+        return Minecraft.getInstance().particleEngine.trackedParticleCounts.getInt(particleGroup) < particleGroup.limit();
     }
 
     /**

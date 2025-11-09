@@ -1,13 +1,14 @@
 package org.mesdag.particlestorm.particle;
 
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.particle.ParticleRenderType;
-import net.minecraft.client.particle.TextureSheetParticle;
+import net.minecraft.client.particle.SingleQuadParticle;
+import net.minecraft.client.renderer.state.QuadParticleRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.core.particles.ParticleGroup;
+import net.minecraft.core.particles.ParticleLimit;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -15,6 +16,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.mesdag.particlestorm.api.IEventNode;
@@ -30,7 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public class MolangParticleInstance extends TextureSheetParticle implements MolangInstance {
+public class MolangParticleInstance extends SingleQuadParticle implements MolangInstance {
     public static final int FULL_LIGHT = 0xF000F0;
     private static final boolean IS_SODIUM_LOADED = ParticleTsunamiPlatform.hasSodium();
 
@@ -72,16 +74,15 @@ public class MolangParticleInstance extends TextureSheetParticle implements Mola
     public float[] UV;
 
     public boolean insideKillPlane;
-    public ParticleGroup particleGroup;
+    public ParticleLimit particleGroup;
     public int lastTimeline = 0;
 
     public MolangParticleInstance(ParticleDetail detail, ClientLevel level, double x, double y, double z, ExtendMutableSpriteSet sprites) {
-        super(level, x, y, z);
+        super(level, x, y, z, sprites.get(detail.effect.description.parameters().getTextureIndex()));
         this.friction = 1.0F;
         this.random = level.getRandom();
         this.detail = detail;
         this.variableTable = new VariableTable(detail.variableTable);
-        setSprite(sprites.get(detail.effect.description.parameters().getTextureIndex()));
         this.originX = ((ITextureAtlasSprite) sprite).particlestorm$getOriginX();
         this.originY = ((ITextureAtlasSprite) sprite).particlestorm$getOriginY();
         this.scaleU = sprite.contents().width() * detail.invTextureWidth;
@@ -250,7 +251,7 @@ public class MolangParticleInstance extends TextureSheetParticle implements Mola
 
     @Override
     public void tick() {
-        if (this.emitter != null && this.emitter.getDetail().localPosition) {
+        /*if (this.emitter != null && this.emitter.getDetail().localPosition) {
             Vec3 emitterPos = this.emitter.getPosition();
 
             if (!this.oldEmitterPos.equals(emitterPos)) {
@@ -259,7 +260,7 @@ public class MolangParticleInstance extends TextureSheetParticle implements Mola
 
                 this.oldEmitterPos = emitterPos;
             }
-        }
+        }*/
         super.tick();
         this.xRotO = xRot;
         this.yRotO = yRot;
@@ -272,13 +273,18 @@ public class MolangParticleInstance extends TextureSheetParticle implements Mola
     }
 
     @Override
-    public void render(@NotNull VertexConsumer buffer, @NotNull Camera renderInfo, float partialTicks) {
+    public void extract(@NotNull QuadParticleRenderState reusedState, @NotNull Camera renderInfo, float partialTicks) {
         Quaternionf quaternionf = new Quaternionf();
         getFacingCameraMode().setRotation(this, quaternionf, renderInfo, partialTicks);
         if (xRot != 0.0F) quaternionf.rotateX(Mth.lerp(partialTicks, xRotO, xRot));
         if (yRot != 0.0F) quaternionf.rotateY(Mth.lerp(partialTicks, yRotO, yRot));
         if (roll != 0.0F) quaternionf.rotateZ(Mth.lerp(partialTicks, oRoll, roll));
-        renderRotatedQuad(buffer, renderInfo, quaternionf, partialTicks);
+        extractRotatedQuad(reusedState, renderInfo, quaternionf, partialTicks);
+    }
+
+    /*@Override
+    protected void extractRotatedQuad(QuadParticleRenderState reusedState, Quaternionf orientation, float x, float y, float z, float partialTick) {
+        super.extractRotatedQuad(reusedState, orientation, x, y, z, partialTick);
     }
 
     @Override
@@ -296,13 +302,13 @@ public class MolangParticleInstance extends TextureSheetParticle implements Mola
         } else {
             super.renderRotatedQuad(buffer, quaternion, x, y, z, partialTicks);
         }
-    }
+    }*/
 
-    @Override
+    /*@Override
     protected void renderVertex(@NotNull VertexConsumer buffer, @NotNull Quaternionf quaternion, float x, float y, float z, float xOffset, float yOffset, float quadSize, float u, float v, int packedLight) {
         Vector3f vector3f = new Vector3f(xOffset * billboardSize[0], yOffset * billboardSize[1], 0.0F).rotate(quaternion).add(x, y, z);
         buffer.addVertex(vector3f.x(), vector3f.y(), vector3f.z()).setUv(u, v).setColor(rCol, gCol, bCol, alpha).setLight(packedLight);
-    }
+    }*/
 
     public void moveDirectly(double x, double y, double z) {
         setBoundingBox(getBoundingBox().move(x, y, z));
@@ -378,8 +384,13 @@ public class MolangParticleInstance extends TextureSheetParticle implements Mola
     }
 
     @Override
-    public @NotNull ParticleRenderType getRenderType() {
-        return detail.renderType;
+    public @NotNull ParticleRenderType getGroup() {
+        return detail.renderType == null ? ParticleRenderType.NO_RENDER : ParticleRenderType.SINGLE_QUADS;
+    }
+
+    @Override
+    protected @NotNull Layer getLayer() {
+        return detail.renderType == null ? Layer.OPAQUE : detail.renderType;
     }
 
     @Override
@@ -393,7 +404,7 @@ public class MolangParticleInstance extends TextureSheetParticle implements Mola
     }
 
     @Override
-    public @NotNull Optional<ParticleGroup> getParticleGroup() {
+    public @NotNull Optional<ParticleLimit> getParticleLimit() {
         return Optional.ofNullable(particleGroup);
     }
 
@@ -405,7 +416,7 @@ public class MolangParticleInstance extends TextureSheetParticle implements Mola
         }
 
         @Override
-        public TextureSheetParticle createParticle(@NotNull MolangParticleOption option, @NotNull ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
+        public @Nullable Particle createParticle(@NotNull MolangParticleOption option, @NotNull ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed, RandomSource random) {
             return new MolangParticleInstance(ParticleTsunamiMod.LOADER.ID_2_PARTICLE.get(option.getId()), level, x, y, z, sprites);
         }
     }

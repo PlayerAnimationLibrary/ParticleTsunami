@@ -58,7 +58,7 @@ public class ParticleEmitter implements MolangInstance {
     public transient int loopingTime = 0;
     public transient int activeTime = 0;
     public transient int fullLoopTime = 0;
-    public transient MutableParticleGroup particleGroup;
+    public transient MutableParticleLimit particleGroup;
     public transient int spawnDuration = 1;
     public transient int spawnRate = 0;
     public transient boolean spawned = false;
@@ -107,6 +107,7 @@ public class ParticleEmitter implements MolangInstance {
         if (initialized) {
             baseTick();
         } else if (particleId != null) {
+            System.out.println(ParticleTsunamiMod.LOADER.ID_2_EMITTER);
             this.detail = ParticleTsunamiMod.LOADER.ID_2_EMITTER.get(particleId);
             if (detail == null) {
                 Minecraft.getInstance().gui.getChat().addMessage(Component.translatable("particle.notFound", particleId.toString()));

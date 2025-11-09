@@ -7,8 +7,8 @@ import com.zigythebird.playeranimcore.animation.keyframe.event.CustomKeyFrameEve
 import com.zigythebird.playeranimcore.animation.keyframe.event.data.KeyFrameData;
 import com.zigythebird.playeranimcore.animation.keyframe.event.data.ParticleKeyframeData;
 import com.zigythebird.playeranimcore.event.EventResult;
-import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Avatar;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
 import org.mesdag.particlestorm.data.event.ParticleEffect;
@@ -24,14 +24,14 @@ public class ParticleTsunamiHandler implements CustomKeyFrameEvents.CustomKeyFra
     @Override
     public EventResult handle(float animationTick, AnimationController controller, ParticleKeyframeData keyframeData, AnimationData animationData) {
         IParticleKeyframeData iData = (IParticleKeyframeData) keyframeData;
-        AbstractClientPlayer entity = ((PlayerAnimationController) controller).getPlayer();
+        Avatar entity = ((PlayerAnimationController) controller).getAvatar();
         VariableTable variableTable = ((IEntity) entity).particlestorm$getVariableTable();
         ResourceLocation particle = iData.particlestorm$getParticle();
         MolangExp expression = iData.particlestorm$getExpression(variableTable);
 
         if (ParticleTsunamiMod.LOADER.contains(iData.particlestorm$getCachedId())) return EventResult.PASS;
 
-        ParticleEmitter emitter = new ParticleEmitter(entity.clientLevel, entity.position(), particle, ParticleEffect.Type.EMITTER, expression);
+        ParticleEmitter emitter = new ParticleEmitter(entity.level(), entity.position(), particle, ParticleEffect.Type.EMITTER, expression);
         emitter.subTable = variableTable;
         ParticleTsunamiMod.LOADER.addEmitter(emitter);
         iData.particlestorm$setCachedId(emitter.id);

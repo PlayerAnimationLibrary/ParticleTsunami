@@ -1,10 +1,8 @@
 package org.mesdag.particlestorm.mixin;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleProvider;
-import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.client.particle.ParticleResources;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import org.mesdag.particlestorm.particle.ExtendMutableSpriteSet;
@@ -19,17 +17,17 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Map;
 
-@Mixin(ParticleEngine.class)
-public class ParticleEngineMixin {
+@Mixin(ParticleResources.class)
+public class ParticleResourcesMixin {
     @Shadow
     @Final
-    private Map<ResourceLocation, ParticleEngine.MutableSpriteSet> spriteSets;
+    private Map<ResourceLocation, ParticleResources.MutableSpriteSet> spriteSets;
     @Shadow
     @Final
     private Int2ObjectMap<ParticleProvider<?>> providers;
 
     @Inject(method = "<init>", at = @At("TAIL"))
-    private void particleTsunami$init(ClientLevel level, TextureManager textureManager, CallbackInfo ci) {
+    private void particleTsunami$init(CallbackInfo ci) {
         ExtendMutableSpriteSet extendMutableSpriteSet = new ExtendMutableSpriteSet();
         spriteSets.put(ParticleTsunamiMod.MOLANG_PARTICLE, extendMutableSpriteSet);
         providers.put(BuiltInRegistries.PARTICLE_TYPE.getIdOrThrow(ParticleTsunamiMod.MOLANG),

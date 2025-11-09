@@ -1,8 +1,8 @@
 package org.mesdag.particlestorm.particle;
 
-import net.minecraft.client.particle.ParticleRenderType;
+import net.minecraft.client.particle.SingleQuadParticle;
 import org.jetbrains.annotations.NotNull;
-import org.mesdag.particlestorm.PSGameClient;
+import org.jetbrains.annotations.Nullable;
 import org.mesdag.particlestorm.api.IComponent;
 import org.mesdag.particlestorm.api.IParticleComponent;
 import org.mesdag.particlestorm.api.MolangInstance;
@@ -23,7 +23,8 @@ import static org.mesdag.particlestorm.data.molang.compiler.MolangQueries.applyP
 
 public class ParticleDetail {
     public final DefinedParticleEffect effect;
-    public final ParticleRenderType renderType;
+    @Nullable
+    public final SingleQuadParticle.Layer renderType;
     public final FaceCameraMode facingCameraMode;
     public final float minSpeedThresholdSqr;
     public final boolean environmentLighting;
@@ -39,13 +40,13 @@ public class ParticleDetail {
     public ParticleDetail(DefinedParticleEffect effect) {
         this.effect = effect;
         this.renderType = switch (effect.description.parameters().material()) {
-            case TERRAIN_SHEET -> ParticleRenderType.TERRAIN_SHEET;
-            case particles_opaque, PARTICLE_SHEET_OPAQUE -> ParticleRenderType.PARTICLE_SHEET_OPAQUE;
+            case TERRAIN_SHEET -> SingleQuadParticle.Layer.TERRAIN;
+            case particles_opaque, PARTICLE_SHEET_OPAQUE -> SingleQuadParticle.Layer.OPAQUE;
             // case particles_add -> PSGameClient.PARTICLE_ADD; TODO
-            case particles_blend, PARTICLE_SHEET_TRANSLUCENT -> ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
+            case particles_blend, PARTICLE_SHEET_TRANSLUCENT -> SingleQuadParticle.Layer.TRANSLUCENT;
             // case particles_alpha, PARTICLE_SHEET_LIT -> ParticleRenderType.PARTICLE_SHEET_LIT;
-            case CUSTOM -> ParticleRenderType.CUSTOM;
-            default -> ParticleRenderType.NO_RENDER;
+            // case CUSTOM -> ParticleRenderType.CUSTOM;
+            default -> null;
         };
         IComponent component1 = effect.components.get(ParticleAppearanceBillboard.ID);
         if (component1 == null) throw new NullPointerException("No particle_appearance_billboard here");

@@ -10,9 +10,12 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.particle.ParticleEngine;
+import net.minecraft.client.particle.ParticleResources;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.texture.SpriteLoader;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.model.AtlasManager;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
@@ -25,8 +28,6 @@ import org.jetbrains.annotations.Nullable;
 import org.mesdag.particlestorm.api.IParticleComponent;
 import org.mesdag.particlestorm.api.IntAllocator;
 import org.mesdag.particlestorm.data.DefinedParticleEffect;
-import org.mesdag.particlestorm.mixed.ITextureAtlas;
-import org.mesdag.particlestorm.mixin.ParticleEngineAccessor;
 import org.redlance.dima_dencep.mods.particletsunami.ParticleTsunamiMod;
 
 import java.io.IOException;
@@ -137,8 +138,9 @@ public class MolangParticleLoader implements PreparableReloadListener {
     }
 
     @Override
-    public @NotNull CompletableFuture<Void> reload(PreparationBarrier preparationBarrier, ResourceManager resourceManager, Executor backgroundExecutor, Executor gameExecutor) {
-        return CompletableFuture.supplyAsync(() -> PARTICLE_LISTER.listMatchingResources(resourceManager), backgroundExecutor).thenCompose(map -> {
+    public @NotNull CompletableFuture<Void> reload(SharedState sharedState, Executor backgroundExecutor, PreparationBarrier preparationBarrier, Executor gameExecutor) {
+        ResourceManager resourceManager = sharedState.resourceManager();
+        CompletableFuture<List<DefinedParticleEffect>> prepare = CompletableFuture.supplyAsync(() -> PARTICLE_LISTER.listMatchingResources(resourceManager), backgroundExecutor).thenCompose(map -> {
             List<CompletableFuture<DefinedParticleEffect>> list = new ArrayList<>(map.size());
             map.forEach((file, resource) -> {
                 ResourceLocation id = PARTICLE_LISTER.fileToId(file);
@@ -151,35 +153,38 @@ public class MolangParticleLoader implements PreparableReloadListener {
                 }, backgroundExecutor));
             });
             return Util.sequence(list);
-        }).thenCompose(preparationBarrier::wait).thenAcceptAsync(effects -> {
+        });
+        CompletableFuture<SpriteLoader.Preparations> particleFuture = sharedState.get(AtlasManager.PENDING_STITCH).get(AtlasIds.PARTICLES);
+        return CompletableFuture.allOf(prepare, particleFuture).thenCompose(preparationBarrier::wait).thenAcceptAsync(effects -> {
             ID_2_EFFECT.clear();
             ID_2_PARTICLE.clear();
             ID_2_EMITTER.clear();
-            effects.forEach(effect -> {
+            prepare.join().forEach(effect -> {
                 ResourceLocation id = effect.description.identifier();
                 ID_2_EFFECT.put(id, effect);
                 ID_2_PARTICLE.put(id, new ParticleDetail(effect));
+                System.out.println(id);
                 ID_2_EMITTER.put(id, new EmitterDetail(
                         new MolangParticleOption(effect.description.identifier()),
                         effect.orderedEmitterComponents,
                         effect.events
                 ));
             });
+            System.out.println(ID_2_EMITTER);
 
-            ParticleEngine particleEngine = Minecraft.getInstance().particleEngine;
-            if (((ParticleEngineAccessor) particleEngine).spriteSets().get(ParticleTsunamiMod.MOLANG_PARTICLE) instanceof ExtendMutableSpriteSet spriteSet) {
-                ((ITextureAtlas) ((ParticleEngineAccessor) particleEngine).textureAtlas()).particlestorm$consume(preparations -> {
-                    spriteSet.clear();
-                    int i = 0;
-                    for (Map.Entry<ResourceLocation, DefinedParticleEffect> entry : ParticleTsunamiMod.LOADER.ID_2_EFFECT.entrySet()) {
-                        TextureAtlasSprite missing = preparations.missing();
-                        spriteSet.bindMissing(missing);
-                        ResourceLocation texture = entry.getValue().description.parameters().bindTexture(i);
-                        TextureAtlasSprite sprite = preparations.regions().get(texture);
-                        spriteSet.addSprite(sprite == null ? missing : sprite);
-                        i++;
-                    }
-                });
+            ParticleResources resources = Minecraft.getInstance().particleEngine.resourceManager;
+            if (resources.spriteSets.get(ParticleTsunamiMod.MOLANG_PARTICLE) instanceof ExtendMutableSpriteSet spriteSet) {
+                spriteSet.clear();
+                int i = 0;
+                SpriteLoader.Preparations preparations = particleFuture.join();
+                for (Map.Entry<ResourceLocation, DefinedParticleEffect> entry : ParticleTsunamiMod.LOADER.ID_2_EFFECT.entrySet()) {
+                    TextureAtlasSprite missing = preparations.missing();
+                    spriteSet.bindMissing(missing);
+                    ResourceLocation texture = entry.getValue().description.parameters().bindTexture(i);
+                    TextureAtlasSprite sprite = preparations.regions().get(texture);
+                    spriteSet.addSprite(sprite == null ? missing : sprite);
+                    i++;
+                }
             }
         }, gameExecutor);
     }

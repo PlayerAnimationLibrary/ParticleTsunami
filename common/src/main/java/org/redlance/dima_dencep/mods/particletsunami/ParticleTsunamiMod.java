@@ -24,7 +24,6 @@ import org.mesdag.particlestorm.api.IComponent;
 import org.mesdag.particlestorm.api.IEventNode;
 import org.mesdag.particlestorm.data.component.*;
 import org.mesdag.particlestorm.data.event.*;
-import org.mesdag.particlestorm.mixin.ParticleEngineAccessor;
 import org.mesdag.particlestorm.particle.MolangParticleLoader;
 import org.mesdag.particlestorm.particle.MolangParticleOption;
 import org.mesdag.particlestorm.particle.ParticleEmitter;
@@ -51,16 +50,16 @@ public abstract class ParticleTsunamiMod {
     });
 
     public void onInitializeClient() {
-        /*MolangEvent.MOLANG_EVENT.register((controller, engine, binding) -> {
+        MolangEvent.MOLANG_EVENT.register((controller, engine, binding) -> {
             MolangLoader.setDoubleQuery(binding, "total_emitter_count", actor -> LOADER.totalEmitterCount());
             MolangLoader.setDoubleQuery(binding, "total_particle_count", actor -> {
                 int sum = 0;
-                for (Integer value : ((ParticleEngineAccessor) Minecraft.getInstance().particleEngine).trackedParticleCounts().values()) {
+                for (Integer value : Minecraft.getInstance().particleEngine.trackedParticleCounts.values()) {
                     sum += value;
                 }
                 return sum;
             });
-        });*/
+        });
 
         ParticleTsunamiHandler handler = new ParticleTsunamiHandler();
         CustomKeyFrameEvents.PARTICLE_KEYFRAME_EVENT.register(handler);
@@ -84,7 +83,7 @@ public abstract class ParticleTsunamiMod {
         if (!ParticleTsunamiPlatform.isDevEnv()) return;
 
         Minecraft minecraft = Minecraft.getInstance();
-        if (!minecraft.getEntityRenderDispatcher().shouldRenderHitBoxes()) return;
+        // if (!minecraft.getEntityRenderDispatcher().shouldRenderHitBoxes()) return;
 
         for (ParticleEmitter value : LOADER.emitters.values()) {
             if (!value.isInitialized() || value.attached != null) continue;
@@ -94,14 +93,14 @@ public abstract class ParticleTsunamiMod {
             double z = value.getZ();
             DebugRenderer.renderFloatingText(poseStack, bufferSource, value.getDetail().option.getId().toString(), x, y + 0.5, z, 0xFFFFFF);
             DebugRenderer.renderFloatingText(poseStack, bufferSource, "id: " + value.id, x, y + 0.3, z, 0xFFFFFF);
-            int maxNum = ((ParticleEngineAccessor) minecraft.particleEngine).trackedParticleCounts().getInt(value.particleGroup);
-            DebugRenderer.renderFloatingText(poseStack, bufferSource, "particles: " + maxNum, x, y + 0.1, z, maxNum == value.particleGroup.getLimit() ? 0xFF0000 : 0xFFFFFF);
+            int maxNum = minecraft.particleEngine.trackedParticleCounts.getInt(value.particleGroup);
+            DebugRenderer.renderFloatingText(poseStack, bufferSource, "particles: " + maxNum, x, y + 0.1, z, maxNum == value.particleGroup.limit() ? 0xFF0000 : 0xFFFFFF);
             double d0 = camera.getPosition().x;
             double d1 = camera.getPosition().y;
             double d2 = camera.getPosition().z;
             poseStack.pushPose();
             poseStack.translate(x - d0, y - d1, z - d2);
-            ShapeRenderer.renderLineBox(poseStack, bufferSource.getBuffer(RenderType.lines()), -0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0, 1, 0, 1);
+            ShapeRenderer.renderLineBox(poseStack.last(), bufferSource.getBuffer(RenderType.lines()), -0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0, 1, 0, 1);
             poseStack.popPose();
         }
     }

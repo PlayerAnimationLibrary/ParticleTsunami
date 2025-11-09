@@ -5,7 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import org.mesdag.particlestorm.api.IEmitterComponent;
 import org.mesdag.particlestorm.data.molang.FloatMolangExp;
 import org.mesdag.particlestorm.data.molang.MolangExp;
-import org.mesdag.particlestorm.particle.MutableParticleGroup;
+import org.mesdag.particlestorm.particle.MutableParticleLimit;
 import org.mesdag.particlestorm.particle.ParticleEmitter;
 
 import java.util.List;
@@ -55,7 +55,7 @@ public abstract sealed class EmitterRate implements IEmitterComponent permits Em
             if (emitter.spawnRate != limit) {
                 emitter.spawnRate = limit;
                 if (emitter.particleGroup == null) {
-                    emitter.particleGroup = new MutableParticleGroup(16384);
+                    emitter.particleGroup = new MutableParticleLimit(16384);
                 }
             }
         }
@@ -111,7 +111,7 @@ public abstract sealed class EmitterRate implements IEmitterComponent permits Em
                 emitter.spawnRate = emitter.spawnDuration == 1 ? (int) (calculated / tickrate) : 1;
                 int limit = (int) maxParticles.calculate(emitter);
                 if (emitter.particleGroup == null) {
-                    emitter.particleGroup = new MutableParticleGroup(limit);
+                    emitter.particleGroup = new MutableParticleLimit(limit);
                 } else {
                     emitter.particleGroup.setLimit(limit);
                 }
@@ -158,7 +158,7 @@ public abstract sealed class EmitterRate implements IEmitterComponent permits Em
         public void apply(ParticleEmitter emitter) {
             int limit = (int) maxParticles.calculate(emitter);
             if (emitter.particleGroup == null) {
-                emitter.particleGroup = new MutableParticleGroup(limit);
+                emitter.particleGroup = new MutableParticleLimit(limit);
             } else {
                 emitter.particleGroup.setLimit(limit);
             }
