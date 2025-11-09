@@ -1,11 +1,7 @@
 package org.mesdag.particlestorm.particle;
 
-<<<<<<<< HEAD:common/src/main/java/org/mesdag/particlestorm/particle/ParticleDetail.java
 import net.minecraft.client.particle.SingleQuadParticle;
-========
 import com.google.common.collect.Iterables;
-import net.minecraft.client.particle.ParticleRenderType;
->>>>>>>> d809110669e34b5219ce8ba010764afb38f26f87:common/src/main/java/org/mesdag/particlestorm/particle/ParticlePreset.java
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.mesdag.particlestorm.api.IComponent;
@@ -30,7 +26,7 @@ import java.util.Map;
 
 import static org.mesdag.particlestorm.data.molang.compiler.MolangQueries.applyPrefixAliases;
 
-public class ParticleDetail {
+public class ParticlePreset {
     public final DefinedParticleEffect effect;
     @Nullable
     public final SingleQuadParticle.Layer renderType;
@@ -46,7 +42,7 @@ public class ParticleDetail {
     public final VariableTable vars;
     public final List<VariableAssignment> assignments;
 
-    public ParticleDetail(DefinedParticleEffect effect) {
+    public ParticlePreset(DefinedParticleEffect effect) {
         this.effect = effect;
         this.renderType = switch (effect.description.parameters().material()) {
             case TERRAIN_SHEET -> SingleQuadParticle.Layer.TERRAIN;
