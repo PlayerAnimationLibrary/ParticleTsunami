@@ -12,5 +12,4 @@ mutable field net/minecraft/core/particles/ParticleLimit limit I
 accessible field net/minecraft/client/particle/ParticleEngine resourceManager Lnet/minecraft/client/particle/ParticleResources;
 accessible field net/minecraft/client/particle/ParticleEngine trackedParticleCounts Lit/unimi/dsi/fastutil/objects/Object2IntOpenHashMap;
 accessible field net/minecraft/client/particle/ParticleResources spriteSets Ljava/util/Map;
-accessible field net/minecraft/client/particle/ParticleResources providers Lit/unimi/dsi/fastutil/ints/Int2ObjectMap;
 accessible method net/minecraft/client/particle/ParticleEngine makeParticle (Lnet/minecraft/core/particles/ParticleOptions;DDDDDD)Lnet/minecraft/client/particle/Particle;
