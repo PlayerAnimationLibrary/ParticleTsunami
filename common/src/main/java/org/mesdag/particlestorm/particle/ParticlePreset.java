@@ -47,10 +47,10 @@ public class ParticlePreset {
         this.renderType = switch (effect.description.parameters().material()) {
             case TERRAIN_SHEET -> SingleQuadParticle.Layer.TERRAIN;
             case particles_opaque, PARTICLE_SHEET_OPAQUE -> SingleQuadParticle.Layer.OPAQUE;
-            // case particles_add -> PSGameClient.PARTICLE_ADD; TODO
+            case particles_add -> SingleQuadParticle.Layer.OPAQUE;
             case particles_blend, PARTICLE_SHEET_TRANSLUCENT -> SingleQuadParticle.Layer.TRANSLUCENT;
-            // case particles_alpha, PARTICLE_SHEET_LIT -> ParticleRenderType.PARTICLE_SHEET_LIT;
-            // case CUSTOM -> ParticleRenderType.CUSTOM;
+            case particles_alpha, PARTICLE_SHEET_LIT -> SingleQuadParticle.Layer.TRANSLUCENT;
+            case CUSTOM -> SingleQuadParticle.Layer.OPAQUE;
             default -> null;
         };
         IComponent component1 = effect.components.get(ParticleAppearanceBillboard.ID);

@@ -267,7 +267,7 @@ public class MolangParticleInstance extends SingleQuadParticle implements Molang
         }
     }
 
-    /*@Override
+    @Override
     public void extract(@NotNull QuadParticleRenderState reusedState, @NotNull Camera renderInfo, float partialTicks) {
         Quaternionf quaternionf = new Quaternionf();
         getFacingCameraMode().setRotation(this, quaternionf, renderInfo, partialTicks);
@@ -275,7 +275,7 @@ public class MolangParticleInstance extends SingleQuadParticle implements Molang
         if (yRot != 0.0F) quaternionf.rotateY(Mth.lerp(partialTicks, yRotO, yRot));
         if (roll != 0.0F) quaternionf.rotateZ(Mth.lerp(partialTicks, oRoll, roll));
         extractRotatedQuad(reusedState, renderInfo, quaternionf, partialTicks);
-    }*/
+    }
 
     /*@Override
     protected void extractRotatedQuad(QuadParticleRenderState reusedState, Quaternionf orientation, float x, float y, float z, float partialTick) {

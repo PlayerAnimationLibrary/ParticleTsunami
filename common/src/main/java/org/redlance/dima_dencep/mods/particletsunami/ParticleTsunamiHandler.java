@@ -9,8 +9,6 @@ import com.zigythebird.playeranimcore.animation.keyframe.event.data.ParticleKeyf
 import com.zigythebird.playeranimcore.event.EventResult;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Avatar;
-import net.minecraft.world.phys.Vec3;
-import org.joml.Vector3f;
 import org.mesdag.particlestorm.data.molang.MolangExp;
 import org.mesdag.particlestorm.data.molang.VariableTable;
 import org.mesdag.particlestorm.mixed.IEntity;
@@ -24,25 +22,24 @@ public class ParticleTsunamiHandler implements CustomKeyFrameEvents.CustomKeyFra
     public EventResult handle(float animationTick, AnimationController controller, ParticleKeyframeData keyframeData, AnimationData animationData) {
         IParticleKeyframeData iData = (IParticleKeyframeData) keyframeData;
         Avatar entity = ((PlayerAnimationController) controller).getAvatar();
-        VariableTable variableTable = ((IEntity) entity).particlestorm$getVariableTable();
+        VariableTable variableTable = IEntity.of(entity).particlestorm$getVariableTable();
         ResourceLocation particle = iData.particlestorm$getParticle();
         MolangExp expression = iData.particlestorm$getExpression(variableTable);
 
-        if (ParticleTsunamiMod.LOADER.contains(iData.particlestorm$getCachedId())) return EventResult.PASS;
-
-        ParticleEmitter emitter = new ParticleEmitter(entity.level(), entity.position(), particle, expression);
-        ParticleTsunamiMod.LOADER.addEmitter(emitter);
-        iData.particlestorm$setCachedId(emitter.id);
-
-        /*Vec3f locator = controller.getBonePosition(keyframeData.getLocator());
-        if (locator == null) {
-            emitter.offsetPos = Vec3.ZERO;
-            emitter.offsetRot = new Vector3f();
-        } else*/ {
+        ParticleEmitter current = ParticleTsunamiMod.LOADER.getEmitter(iData.particlestorm$getCachedId());
+        if (current == null || current.isRemoved() || !particle.equals(current.particleId)) {
+            ParticleEmitter emitter = new ParticleEmitter(entity.level(), entity.position(), particle, expression);
+            ParticleTsunamiMod.LOADER.addEmitter(emitter);
+            System.out.println(emitter);
+            iData.particlestorm$setCachedId(emitter.id);
             emitter.attachEntity(entity);
-            emitter.offsetPos = Vec3.ZERO;
-            emitter.offsetRot = new Vector3f();
-            emitter.parentRotation = new Vector3f();
+            emitter.attachedBlock = null;
+            /*double[] offset = getLocatorOffset(locator);
+            double[] rotation = getLocatorRotation(locator);
+            emitter.offsetPos = new Vec3(offset[0] * 0.0625, offset[1] * 0.0625, -offset[2] * 0.0625);
+            emitter.offsetRot = new Vector3f((float) Math.toRadians(rotation[0]), (float) Math.toRadians(rotation[1]), (float) Math.toRadians(rotation[2]));
+            emitter.parentPosition = cache.particlestorm$getPosition();
+            emitter.parentRotation = cache.particlestorm$getRotation();*/
             emitter.parentMode = ParticleEmitter.ParentMode.LOCATOR;
         }
 
