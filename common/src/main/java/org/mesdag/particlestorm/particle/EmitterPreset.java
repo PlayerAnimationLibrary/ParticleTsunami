@@ -24,7 +24,7 @@ public class EmitterPreset {
     public final VariableTable vars;
     public final List<VariableAssignment> assignments;
     public EmitterRate.Type emitterRateType = EmitterRate.Type.MANUAL;
-    public final boolean localPosition = true;
+    public boolean localPosition = false;
     public boolean localRotation = false;
     public boolean localVelocity = false;
     public EmitterLifetimeEvents lifetimeEvents;
@@ -58,7 +58,7 @@ public class EmitterPreset {
                 if (shape) throw new IllegalArgumentException("Duplicate emitter shape component");
                 else shape = true;
             } else if (component instanceof EmitterLocalSpace(boolean position, boolean rotation, boolean velocity)) {
-                // this.localPosition = position;
+                this.localPosition = position;
                 this.localRotation = rotation;
                 this.localVelocity = velocity;
             } else if (component instanceof EmitterLifetimeEvents e) {

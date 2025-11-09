@@ -243,20 +243,8 @@ public class MolangParticleInstance extends SingleQuadParticle implements Molang
         return age;
     }
 
-    public Vec3 oldEmitterPos = Vec3.ZERO;
-
     @Override
     public void tick() {
-        /*if (this.emitter != null && this.emitter.getDetail().localPosition) {
-            Vec3 emitterPos = this.emitter.getPosition();
-
-            if (!this.oldEmitterPos.equals(emitterPos)) {
-                Vec3 newPos = getPosition().add(emitterPos.subtract(this.oldEmitterPos));
-                setPos(newPos.x, newPos.y, newPos.z);
-
-                this.oldEmitterPos = emitterPos;
-            }
-        }*/
         super.tick();
         this.xRotO = xRot;
         this.yRotO = yRot;

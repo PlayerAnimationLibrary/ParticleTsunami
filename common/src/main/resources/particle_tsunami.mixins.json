@@ -6,7 +6,6 @@
   "client": [
     "EntityMixin",
     "LivingEntityMixin",
-    "ParticleEngineAccessor",
     "ParticleResourcesMixin",
     "TextureAtlasSpriteMixin"
   ],
