@@ -26,14 +26,12 @@ import org.mesdag.particlestorm.data.component.ParticleMotionCollision;
 import org.mesdag.particlestorm.data.molang.VariableTable;
 import org.mesdag.particlestorm.mixed.ITextureAtlasSprite;
 import org.redlance.dima_dencep.mods.particletsunami.ParticleTsunamiMod;
-import org.redlance.dima_dencep.mods.particletsunami.ParticleTsunamiPlatform;
 
 import java.util.List;
 import java.util.Optional;
 
 public class MolangParticleInstance extends SingleQuadParticle implements MolangInstance {
     public static final int FULL_LIGHT = 0xF000F0;
-    private static final boolean IS_SODIUM_LOADED = ParticleTsunamiPlatform.hasSodium();
 
     public final RandomSource random;
     public final ParticlePreset preset;

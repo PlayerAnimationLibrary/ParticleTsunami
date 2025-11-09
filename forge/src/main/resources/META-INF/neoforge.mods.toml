@@ -4,9 +4,9 @@ license="LGPL-3.0"
 issueTrackerURL="https://github.com/PlayerAnimationLibrary/ParticleTsunami/issues"
 
 [[mods]]
-modId="${mod_id}"
-version="${mod_version}"
-displayName="${mod_name}"
+modId="particle_tsunami"
+version="${version}"
+displayName="ParticleTsunami"
 #updateJSONURL="https://change.me.example.invalid/updates.json" #optional
 displayURL="https://github.com/PlayerAnimationLibrary/ParticleTsunami"
 logoFile="logo.png"

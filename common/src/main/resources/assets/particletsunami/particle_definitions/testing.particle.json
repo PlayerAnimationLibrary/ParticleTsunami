@@ -13,6 +13,10 @@
         "spawn_rate": 50,
         "max_particles": 100
       },
+      "minecraft:emitter_local_space": {
+        "position": true,
+        "rotation": true
+      },
       "minecraft:emitter_lifetime_looping": {
         "active_time": 1
       },
