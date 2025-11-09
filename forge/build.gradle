@@ -42,7 +42,6 @@ shadowJar {
 
     configurations = [project.configurations.shadowCommon]
     archiveClassifier.set "dev-shadow"
-    relocate 'team.unnamed.mocha', 'com.zigythebird.playeranim.lib.mochafloats'
 }
 
 remapJar {
@@ -63,10 +62,8 @@ sourcesJar {
     from commonSources.archiveFile.map { zipTree(it) }
 }
 
-components.java {
-    withVariantsFromConfiguration(project.configurations.shadowRuntimeElements) {
-        skip()
-    }
+shadow {
+    addShadowVariantIntoJavaComponent = false
 }
 
 publishing {
