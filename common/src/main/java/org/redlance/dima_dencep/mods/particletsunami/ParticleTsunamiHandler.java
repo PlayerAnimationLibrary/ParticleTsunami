@@ -7,8 +7,10 @@ import com.zigythebird.playeranimcore.animation.keyframe.event.CustomKeyFrameEve
 import com.zigythebird.playeranimcore.animation.keyframe.event.data.KeyFrameData;
 import com.zigythebird.playeranimcore.animation.keyframe.event.data.ParticleKeyframeData;
 import com.zigythebird.playeranimcore.event.EventResult;
+import com.zigythebird.playeranimcore.math.Vec3f;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Avatar;
+import net.minecraft.world.phys.Vec3;
 import org.mesdag.particlestorm.data.molang.MolangExp;
 import org.mesdag.particlestorm.data.molang.VariableTable;
 import org.mesdag.particlestorm.mixed.IEntity;
@@ -34,12 +36,11 @@ public class ParticleTsunamiHandler implements CustomKeyFrameEvents.CustomKeyFra
             iData.particlestorm$setCachedId(emitter.id);
             emitter.attachEntity(entity);
             emitter.attachedBlock = null;
-            /*double[] offset = getLocatorOffset(locator);
-            double[] rotation = getLocatorRotation(locator);
-            emitter.offsetPos = new Vec3(offset[0] * 0.0625, offset[1] * 0.0625, -offset[2] * 0.0625);
-            emitter.offsetRot = new Vector3f((float) Math.toRadians(rotation[0]), (float) Math.toRadians(rotation[1]), (float) Math.toRadians(rotation[2]));
-            emitter.parentPosition = cache.particlestorm$getPosition();
-            emitter.parentRotation = cache.particlestorm$getRotation();*/
+            Vec3f position = controller.getBonePosition(keyframeData.getLocator());
+            emitter.offsetPos = new Vec3(position.x() * 0.0625, position.y() * 0.0625, position.z() * 0.0625);
+            //emitter.offsetRot =
+            emitter.parentPosition = null;
+            emitter.parentRotation = null;
             emitter.parentMode = ParticleEmitter.ParentMode.LOCATOR;
         }
 

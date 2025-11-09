@@ -103,8 +103,8 @@
 			},
 			"particle_effects": {
 				"0.0": {
-					"effect": "snowstorm:loading",
-					"locator": "loading"
+					"effect": "emotecraft:testing",
+					"locator": ""
 				}
 			}
 		}
