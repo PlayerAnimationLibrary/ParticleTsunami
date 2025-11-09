@@ -189,8 +189,7 @@ public class MolangParticleLoader implements PreparableReloadListener {
                         effect.orderedEmitterComponents,
                         effect.events
                 ));
-            };
-
+            }
             this.id2Effect = id2Effect;
             this.id2Particle = id2Particle;
             this.id2Emitter = id2Emitter;

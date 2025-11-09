@@ -19,6 +19,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import org.jetbrains.annotations.NotNull;
 import org.mesdag.particlestorm.api.IComponent;
 import org.mesdag.particlestorm.api.IEventNode;
@@ -83,18 +84,16 @@ public abstract class ParticleTsunamiMod {
         if (!ParticleTsunamiPlatform.isDevEnv()) return;
 
         Minecraft minecraft = Minecraft.getInstance();
-        // if (!minecraft.getEntityRenderDispatcher().shouldRenderHitBoxes()) return;
-
-        for (ParticleEmitter value : LOADER.emitters.values()) {
-            if (!value.isInitialized() || value.attached != null) continue;
-            MultiBufferSource.BufferSource bufferSource = minecraft.renderBuffers().bufferSource();
-            double x = value.getX();
-            double y = value.getY();
-            double z = value.getZ();
-            DebugRenderer.renderFloatingText(poseStack, bufferSource, value.getDetail().option.getId().toString(), x, y + 0.5, z, 0xFFFFFF);
-            DebugRenderer.renderFloatingText(poseStack, bufferSource, "id: " + value.id, x, y + 0.3, z, 0xFFFFFF);
-            int maxNum = minecraft.particleEngine.trackedParticleCounts.getInt(value.particleGroup);
-            DebugRenderer.renderFloatingText(poseStack, bufferSource, "particles: " + maxNum, x, y + 0.1, z, maxNum == value.particleGroup.limit() ? 0xFF0000 : 0xFFFFFF);
+        float partialTicks = minecraft.getDeltaTracker().getGameTimeDeltaPartialTick(true);
+        MultiBufferSource.BufferSource bufferSource = minecraft.renderBuffers().bufferSource();
+        for (ParticleEmitter emitter : LOADER.emitters.values()) {
+            double x = Mth.lerp(partialTicks, emitter.posO.x, emitter.pos.x);
+            double y = Mth.lerp(partialTicks, emitter.posO.y, emitter.pos.y);
+            double z = Mth.lerp(partialTicks, emitter.posO.z, emitter.pos.z);
+            DebugRenderer.renderFloatingText(poseStack, bufferSource, emitter.getPreset().option.getId().toString(), x, y + 0.5, z, 0xFFFFFF);
+            DebugRenderer.renderFloatingText(poseStack, bufferSource, "id: " + emitter.id, x, y + 0.3, z, 0xFFFFFF);
+            int maxNum = minecraft.particleEngine.trackedParticleCounts.getInt(emitter.particleGroup);
+            DebugRenderer.renderFloatingText(poseStack, bufferSource, "particles: " + maxNum, x, y + 0.1, z, maxNum == emitter.particleGroup.limit() ? 0xFF0000 : 0xFFFFFF);
             double d0 = camera.getPosition().x;
             double d1 = camera.getPosition().y;
             double d2 = camera.getPosition().z;

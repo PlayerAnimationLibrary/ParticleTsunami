@@ -8,4 +8,7 @@ public interface IParticleKeyframeData {
     ResourceLocation particlestorm$getParticle();
 
     MolangExp particlestorm$getExpression(VariableTable variableTable);
+
+    void particlestorm$setCachedId(int id);
+    int particlestorm$getCachedId();
 }

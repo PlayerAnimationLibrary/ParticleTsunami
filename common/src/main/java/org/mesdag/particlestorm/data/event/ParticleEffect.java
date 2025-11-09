@@ -64,7 +64,7 @@ public record ParticleEffect(ResourceLocation effect, Type type, MolangExp preEf
             if (variable == null) throw new IllegalArgumentException("Shared vars must defined in parent directly!");
             emitter.getVars().setValue(name, variable);
         }
-        ParticleTsunamiMod.LOADER.addEmitter(emitter, false);
+        ParticleTsunamiMod.LOADER.addEmitter(emitter);
     }
 
     @Override
