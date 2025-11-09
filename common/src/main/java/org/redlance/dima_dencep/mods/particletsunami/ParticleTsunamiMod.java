@@ -1,5 +1,7 @@
 package org.redlance.dima_dencep.mods.particletsunami;
 
+import com.mojang.datafixers.util.Either;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.zigythebird.playeranimcore.animation.keyframe.event.CustomKeyFrameEvents;
 import com.zigythebird.playeranimcore.event.MolangEvent;
@@ -21,9 +23,18 @@ import org.redlance.dima_dencep.mods.particletsunami.particle.MolangParticleOpti
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.function.Function;
+
 public abstract class ParticleTsunamiMod {
     public static final String MODID = "particle_tsunami";
     public static final Logger LOGGER = LoggerFactory.getLogger("ParticleTsunami");
+
+    public static final Codec<List<String>> STRING_LIST_CODEC = Codec.either(Codec.STRING, Codec.list(Codec.STRING)).xmap(
+            either -> either.map(Collections::singletonList, Function.identity()),
+            l -> l.size() == 1 ? Either.left(l.getFirst()) : Either.right(l)
+    );
 
     public static final MolangParticleLoader LOADER = new MolangParticleLoader();
 

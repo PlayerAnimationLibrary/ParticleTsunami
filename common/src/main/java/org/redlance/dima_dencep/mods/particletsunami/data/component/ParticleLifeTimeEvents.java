@@ -4,7 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Tuple;
-import org.redlance.dima_dencep.mods.particletsunami.ParticleStorm;
+import org.redlance.dima_dencep.mods.particletsunami.ParticleTsunamiMod;
 import org.redlance.dima_dencep.mods.particletsunami.api.IEventNode;
 import org.redlance.dima_dencep.mods.particletsunami.api.IParticleComponent;
 import org.redlance.dima_dencep.mods.particletsunami.data.molang.MolangExp;
@@ -23,9 +23,9 @@ import java.util.function.Function;
 public final class ParticleLifeTimeEvents implements IParticleComponent {
     public static final ResourceLocation ID = ResourceLocation.withDefaultNamespace("particle_lifetime_events");
     public static final Codec<ParticleLifeTimeEvents> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            ParticleStorm.STRING_LIST_CODEC.fieldOf("creation_event").orElseGet(List::of).forGetter(events -> events.creationEvent),
-            ParticleStorm.STRING_LIST_CODEC.fieldOf("expiration_event").orElseGet(List::of).forGetter(events -> events.expirationEvent),
-            Codec.unboundedMap(Codec.STRING, ParticleStorm.STRING_LIST_CODEC).fieldOf("timeline").orElseGet(Map::of).forGetter(events -> events.timeline)
+            ParticleTsunamiMod.STRING_LIST_CODEC.fieldOf("creation_event").orElseGet(List::of).forGetter(events -> events.creationEvent),
+            ParticleTsunamiMod.STRING_LIST_CODEC.fieldOf("expiration_event").orElseGet(List::of).forGetter(events -> events.expirationEvent),
+            Codec.unboundedMap(Codec.STRING, ParticleTsunamiMod.STRING_LIST_CODEC).fieldOf("timeline").orElseGet(Map::of).forGetter(events -> events.timeline)
     ).apply(instance, ParticleLifeTimeEvents::new));
     public final List<String> creationEvent;
     public final List<String> expirationEvent;

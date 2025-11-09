@@ -3,7 +3,7 @@ package org.redlance.dima_dencep.mods.particletsunami.data.component;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.Tuple;
-import org.redlance.dima_dencep.mods.particletsunami.ParticleStorm;
+import org.redlance.dima_dencep.mods.particletsunami.ParticleTsunamiMod;
 import org.redlance.dima_dencep.mods.particletsunami.api.IEmitterComponent;
 import org.redlance.dima_dencep.mods.particletsunami.api.IEventNode;
 import org.redlance.dima_dencep.mods.particletsunami.data.molang.MolangExp;
@@ -22,10 +22,10 @@ import java.util.function.Function;
  */
 public final class EmitterLifetimeEvents implements IEmitterComponent {
     public static final Codec<EmitterLifetimeEvents> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            ParticleStorm.STRING_LIST_CODEC.fieldOf("creation_event").orElseGet(List::of).forGetter(events -> events.creationEvent),
-            ParticleStorm.STRING_LIST_CODEC.fieldOf("expiration_event").orElseGet(List::of).forGetter(events -> events.expirationEvent),
-            Codec.unboundedMap(Codec.STRING, ParticleStorm.STRING_LIST_CODEC).fieldOf("timeline").orElseGet(Map::of).forGetter(events -> events.timeline),
-            Codec.unboundedMap(Codec.STRING, ParticleStorm.STRING_LIST_CODEC).fieldOf("travel_distance_events").orElseGet(Map::of).forGetter(events -> events.travelDistanceEvents),
+            ParticleTsunamiMod.STRING_LIST_CODEC.fieldOf("creation_event").orElseGet(List::of).forGetter(events -> events.creationEvent),
+            ParticleTsunamiMod.STRING_LIST_CODEC.fieldOf("expiration_event").orElseGet(List::of).forGetter(events -> events.expirationEvent),
+            Codec.unboundedMap(Codec.STRING, ParticleTsunamiMod.STRING_LIST_CODEC).fieldOf("timeline").orElseGet(Map::of).forGetter(events -> events.timeline),
+            Codec.unboundedMap(Codec.STRING, ParticleTsunamiMod.STRING_LIST_CODEC).fieldOf("travel_distance_events").orElseGet(Map::of).forGetter(events -> events.travelDistanceEvents),
             Codec.list(LoopingTravelDistanceEvent.CODEC).fieldOf("looping_travel_distance_events").orElseGet(List::of).forGetter(events -> events.loopingTravelDistanceEvents)
     ).apply(instance, EmitterLifetimeEvents::new));
     public final List<String> creationEvent;
@@ -146,7 +146,7 @@ public final class EmitterLifetimeEvents implements IEmitterComponent {
     public record LoopingTravelDistanceEvent(float distance, List<String> effects) {
         public static final Codec<LoopingTravelDistanceEvent> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 Codec.FLOAT.fieldOf("distance").forGetter(LoopingTravelDistanceEvent::distance),
-                ParticleStorm.STRING_LIST_CODEC.fieldOf("effects").forGetter(LoopingTravelDistanceEvent::effects)
+                ParticleTsunamiMod.STRING_LIST_CODEC.fieldOf("effects").forGetter(LoopingTravelDistanceEvent::effects)
         ).apply(instance, LoopingTravelDistanceEvent::new));
     }
 }
