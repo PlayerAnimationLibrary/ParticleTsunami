@@ -7,7 +7,7 @@ import net.fabricmc.fabric.api.resource.v1.reloader.ResourceReloaderKeys;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.packs.PackType;
-import org.mesdag.particlestorm.particle.MolangParticleLoader;
+import org.redlance.dima_dencep.mods.particletsunami.particle.MolangParticleLoader;
 import org.redlance.dima_dencep.mods.particletsunami.ParticleTsunamiMod;
 
 public class ParticleTsunamiModFabric extends ParticleTsunamiMod implements ClientModInitializer {

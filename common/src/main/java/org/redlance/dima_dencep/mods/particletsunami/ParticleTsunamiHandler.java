@@ -11,11 +11,11 @@ import com.zigythebird.playeranimcore.math.Vec3f;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Avatar;
 import net.minecraft.world.phys.Vec3;
-import org.mesdag.particlestorm.data.molang.MolangExp;
-import org.mesdag.particlestorm.data.molang.VariableTable;
-import org.mesdag.particlestorm.mixed.IEntity;
-import org.mesdag.particlestorm.mixed.IParticleKeyframeData;
-import org.mesdag.particlestorm.particle.ParticleEmitter;
+import org.redlance.dima_dencep.mods.particletsunami.data.molang.MolangExp;
+import org.redlance.dima_dencep.mods.particletsunami.data.molang.VariableTable;
+import org.redlance.dima_dencep.mods.particletsunami.mixed.IEntity;
+import org.redlance.dima_dencep.mods.particletsunami.mixed.IParticleKeyframeData;
+import org.redlance.dima_dencep.mods.particletsunami.particle.ParticleEmitter;
 
 import java.util.Set;
 

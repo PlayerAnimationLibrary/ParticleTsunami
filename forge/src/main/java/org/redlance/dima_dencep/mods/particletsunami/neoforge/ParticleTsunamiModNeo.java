@@ -10,7 +10,7 @@ import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.registries.RegisterEvent;
-import org.mesdag.particlestorm.particle.MolangParticleLoader;
+import org.redlance.dima_dencep.mods.particletsunami.particle.MolangParticleLoader;
 import org.redlance.dima_dencep.mods.particletsunami.ParticleTsunamiMod;
 
 @Mod(value = ParticleTsunamiMod.MODID, dist = Dist.CLIENT)

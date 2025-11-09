@@ -12,12 +12,12 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
-import org.mesdag.particlestorm.api.IComponent;
-import org.mesdag.particlestorm.api.IEventNode;
-import org.mesdag.particlestorm.data.component.*;
-import org.mesdag.particlestorm.data.event.*;
-import org.mesdag.particlestorm.particle.MolangParticleLoader;
-import org.mesdag.particlestorm.particle.MolangParticleOption;
+import org.redlance.dima_dencep.mods.particletsunami.api.IComponent;
+import org.redlance.dima_dencep.mods.particletsunami.api.IEventNode;
+import org.redlance.dima_dencep.mods.particletsunami.data.component.*;
+import org.redlance.dima_dencep.mods.particletsunami.data.event.*;
+import org.redlance.dima_dencep.mods.particletsunami.particle.MolangParticleLoader;
+import org.redlance.dima_dencep.mods.particletsunami.particle.MolangParticleOption;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
