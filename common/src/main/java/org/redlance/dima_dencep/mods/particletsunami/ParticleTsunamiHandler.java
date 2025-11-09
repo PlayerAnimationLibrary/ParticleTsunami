@@ -11,7 +11,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Avatar;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
-import org.mesdag.particlestorm.data.event.ParticleEffect;
 import org.mesdag.particlestorm.data.molang.MolangExp;
 import org.mesdag.particlestorm.data.molang.VariableTable;
 import org.mesdag.particlestorm.mixed.IEntity;
@@ -31,17 +30,16 @@ public class ParticleTsunamiHandler implements CustomKeyFrameEvents.CustomKeyFra
 
         if (ParticleTsunamiMod.LOADER.contains(iData.particlestorm$getCachedId())) return EventResult.PASS;
 
-        ParticleEmitter emitter = new ParticleEmitter(entity.level(), entity.position(), particle, ParticleEffect.Type.EMITTER, expression);
-        emitter.subTable = variableTable;
+        ParticleEmitter emitter = new ParticleEmitter(entity.level(), entity.position(), particle, expression);
         ParticleTsunamiMod.LOADER.addEmitter(emitter);
         iData.particlestorm$setCachedId(emitter.id);
 
-        /* AdvancedPlayerAnimBone locator = controller.get3DTransform(keyframeData.getLocator());
+        /*Vec3f locator = controller.getBonePosition(keyframeData.getLocator());
         if (locator == null) {
             emitter.offsetPos = Vec3.ZERO;
             emitter.offsetRot = new Vector3f();
         } else*/ {
-            emitter.attached = entity;
+            emitter.attachEntity(entity);
             emitter.offsetPos = Vec3.ZERO;
             emitter.offsetRot = new Vector3f();
             emitter.parentRotation = new Vector3f();
