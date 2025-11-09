@@ -76,10 +76,10 @@ public class MolangParticleInstance extends SingleQuadParticle implements Molang
     public ParticleLimit particleGroup;
     public int lastTimeline = 0;
 
-    public MolangParticleInstance(ParticlePreset preset, ClientLevel level, double x, double y, double z, ExtendMutableSpriteSet sprites) {
+    public MolangParticleInstance(ParticlePreset preset, ClientLevel level, double x, double y, double z, ExtendMutableSpriteSet sprites, RandomSource random) {
         super(level, x, y, z, sprites.get(preset.effect.description.parameters().getTextureIndex()));
         this.friction = 1.0F;
-        this.random = level.getRandom();
+        this.random = random;
         this.preset = preset;
         this.originX = ((ITextureAtlasSprite) sprite).particlestorm$getOriginX();
         this.originY = ((ITextureAtlasSprite) sprite).particlestorm$getOriginY();
@@ -380,7 +380,7 @@ public class MolangParticleInstance extends SingleQuadParticle implements Molang
 
         @Override
         public @Nullable Particle createParticle(@NotNull MolangParticleOption option, @NotNull ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed, RandomSource random) {
-            return new MolangParticleInstance(ParticleTsunamiMod.LOADER.id2Particle().get(option.getId()), level, x, y, z, sprites);
+            return new MolangParticleInstance(ParticleTsunamiMod.LOADER.id2Particle().get(option.getId()), level, x, y, z, sprites, random);
         }
     }
 }
