@@ -1,5 +1,6 @@
 package org.mesdag.particlestorm.particle;
 
+import com.zigythebird.playeranim.PlayerAnimLibPlatform;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
@@ -10,6 +11,7 @@ import net.minecraft.client.renderer.state.QuadParticleRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.particles.ParticleLimit;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
@@ -32,6 +34,7 @@ import java.util.Optional;
 
 public class MolangParticleInstance extends SingleQuadParticle implements MolangInstance {
     public static final int FULL_LIGHT = 0xF000F0;
+    private static final boolean IS_SODIUM_LOADED = PlayerAnimLibPlatform.isModLoaded("sodium");
 
     public final RandomSource random;
     public final ParticlePreset preset;
@@ -263,27 +266,14 @@ public class MolangParticleInstance extends SingleQuadParticle implements Molang
         extractRotatedQuad(reusedState, renderInfo, quaternionf, partialTicks);
     }
 
-    /*@Override
-    protected void extractRotatedQuad(QuadParticleRenderState reusedState, Quaternionf orientation, float x, float y, float z, float partialTick) {
-        super.extractRotatedQuad(reusedState, orientation, x, y, z, partialTick);
-    }
-
     @Override
-    protected void renderRotatedQuad(@NotNull VertexConsumer buffer, @NotNull Quaternionf quaternion, float x, float y, float z, float partialTicks) {
+    protected void extractRotatedQuad(QuadParticleRenderState reusedState, Quaternionf orientation, float x, float y, float z, float partialTick) {
         if (IS_SODIUM_LOADED) {
-            float f1 = getU0();
-            float f2 = getU1();
-            float f3 = getV0();
-            float f4 = getV1();
-            int i = getLightColor(partialTicks);
-            renderVertex(buffer, quaternion, x, y, z, 1.0F, -1.0F, 0.0F, f2, f4, i);
-            renderVertex(buffer, quaternion, x, y, z, 1.0F, 1.0F, 0.0F, f2, f3, i);
-            renderVertex(buffer, quaternion, x, y, z, -1.0F, 1.0F, 0.0F, f1, f3, i);
-            renderVertex(buffer, quaternion, x, y, z, -1.0F, -1.0F, 0.0F, f1, f4, i);
+            reusedState.add(getLayer(), x, y, z, orientation.x, orientation.y, orientation.z, orientation.w, getQuadSize(partialTick), getU0(), getU1(), getV0(), getV1(), ARGB.colorFromFloat(this.alpha, this.rCol, this.gCol, this.bCol), getLightColor(partialTick));
         } else {
-            super.renderRotatedQuad(buffer, quaternion, x, y, z, partialTicks);
+            super.extractRotatedQuad(reusedState, orientation, x, y, z, partialTick);
         }
-    }*/
+    }
 
     /*@Override
     protected void renderVertex(@NotNull VertexConsumer buffer, @NotNull Quaternionf quaternion, float x, float y, float z, float xOffset, float yOffset, float quadSize, float u, float v, int packedLight) {
