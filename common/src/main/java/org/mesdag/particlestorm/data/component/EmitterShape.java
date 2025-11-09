@@ -4,7 +4,6 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.particle.Particle;
 import net.minecraft.core.particles.ParticleLimit;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -21,11 +20,10 @@ import org.mesdag.particlestorm.data.MathHelper;
 import org.mesdag.particlestorm.data.molang.FloatMolangExp;
 import org.mesdag.particlestorm.data.molang.FloatMolangExp3;
 import org.mesdag.particlestorm.data.molang.MolangExp;
-import org.mesdag.particlestorm.data.molang.compiler.value.Variable;
 import org.mesdag.particlestorm.mixin.ParticleEngineAccessor;
 import org.mesdag.particlestorm.particle.MolangParticleInstance;
-import org.mesdag.particlestorm.particle.ParticleDetail;
 import org.mesdag.particlestorm.particle.ParticleEmitter;
+import org.mesdag.particlestorm.particle.ParticlePreset;
 
 import java.util.Arrays;
 import java.util.List;
@@ -53,7 +51,7 @@ public abstract sealed class EmitterShape implements IEmitterComponent permits E
                     emittingParticle(entity);
                 }
             }
-            if (entity.getDetail().emitterRateType == EmitterRate.Type.INSTANT) {
+            if (entity.getPreset().emitterRateType == EmitterRate.Type.INSTANT) {
                 entity.spawned = true;
             }
         }
@@ -66,63 +64,60 @@ public abstract sealed class EmitterShape implements IEmitterComponent permits E
 
     protected abstract void initializeParticle(MolangInstance instance, Vector3f position, Vector3f speed);
 
+    protected boolean isPoint() {
+        return false;
+    }
+
     private void emittingParticle(ParticleEmitter emitter) {
-        Particle particle = ((ParticleEngineAccessor) Minecraft.getInstance().particleEngine).callMakeParticle(emitter.getDetail().option, emitter.getX(), emitter.getY(), emitter.getZ(), 0.0, 0.0, 0.0);
-        if (particle instanceof MolangParticleInstance instance) {
-            instance.emitter = emitter;
-            instance.getVariableTable().subTable = emitter.getVariableTable();
+        MolangParticleInstance instance = (MolangParticleInstance) ((ParticleEngineAccessor) Minecraft.getInstance().particleEngine).callMakeParticle(emitter.getPreset().option, emitter.getX(), emitter.getY(), emitter.getZ(), 0.0, 0.0, 0.0);
+        instance.setEmitter(emitter);
 
-            Vector3f position = new Vector3f();
-            Vector3f speed = new Vector3f();
-            initializeParticle(instance, position, speed);
+        ParticlePreset preset = instance.preset;
+        MathHelper.redirect(preset.assignments, instance.getVars());
 
-            ParticleDetail detail = instance.detail;
-            detail.assignments.forEach(assignment -> {
-                // 重定向，防止污染变量表
-                String name = assignment.variable().name();
-                instance.getVariableTable().setValue(name, new Variable(name, assignment.value()));
-            });
-            for (IParticleComponent component : detail.effect.orderedParticleEarlyComponents) {
-                component.apply(instance);
-            }
-            speed.mul(instance.initialSpeed);
-            if (emitter.parentMode == ParticleEmitter.ParentMode.LOCATOR) {
-                position.x *= -1;
-                position.y *= -1;
-                speed.x *= -1;
-                speed.y *= -1;
-            }
-            if (emitter.parentMode != ParticleEmitter.ParentMode.WORLD && emitter.getDetail().localPosition && !emitter.getDetail().localRotation) {
-                speed.x *= -1;
-                speed.z *= -1;
-            }
-            if (emitter.getDetail().localRotation) {
-                MathHelper.applyEuler(emitter.rot.x, emitter.rot.y, 0.0F, position);
-            }
-            if (emitter.getDetail().localPosition) {
-                Vec3 emitterPos = emitter.getPosition();
-                position.add((float) emitterPos.x, (float) emitterPos.y, (float) emitterPos.z);
-                instance.oldEmitterPos = emitterPos;
-            }
-            speed.mul(emitter.invTickRate);
-            if (emitter.attached != null && emitter.getDetail().localVelocity) {
-                Vec3 emitterVec = emitter.attached.getDeltaMovement();
-                speed.add((float) emitterVec.x, (float) emitterVec.y, (float) emitterVec.z);
-            }
-
-            instance.setParticleSpeed(speed.x, speed.y, speed.z);
-            instance.setPos(position.x, position.y, position.z);
-            instance.setPosO(position.x, position.y, position.z);
-            instance.particleGroup = emitter.particleGroup;
-
-            for (IParticleComponent component : detail.effect.orderedParticleComponents) {
-                component.apply(instance);
-            }
-            instance.components = detail.effect.orderedParticleComponentsWhichRequireUpdate;
-            instance.motionDynamic = detail.motionDynamic;
-            if (!instance.motionDynamic) instance.setParticleSpeed(0.0, 0.0, 0.0);
+        Vector3f position = new Vector3f();
+        Vector3f speed = new Vector3f();
+        initializeParticle(instance, position, speed);
+        for (IParticleComponent component : preset.effect.orderedParticleEarlyComponents) {
+            component.apply(instance);
         }
-        Minecraft.getInstance().particleEngine.add(particle);
+        speed.mul(instance.initialSpeed);
+        if (emitter.parentMode == ParticleEmitter.ParentMode.LOCATOR) {
+            position.x *= -1;
+            position.y *= -1;
+            speed.x *= -1;
+            speed.y *= -1;
+        }
+        if (emitter.parentMode != ParticleEmitter.ParentMode.WORLD && emitter.getPreset().localPosition && !emitter.getPreset().localRotation) {
+            speed.x *= -1;
+            speed.z *= -1;
+        }
+        if (emitter.getPreset().localRotation) {
+            MathHelper.applyEuler(emitter.rot.x, emitter.rot.y, 0.0F, position);
+        }
+        if (emitter.getPreset().localPosition) {
+            Vec3 emitterPos = emitter.getPosition();
+            position.add((float) emitterPos.x, (float) emitterPos.y, (float) emitterPos.z);
+            instance.oldEmitterPos = emitterPos;
+        }
+        speed.mul(emitter.invTickRate);
+        if (emitter.getAttachedEntity() != null && emitter.getPreset().localVelocity) {
+            Vec3 emitterVec = emitter.getAttachedEntity().getDeltaMovement();
+            speed.add((float) emitterVec.x, (float) emitterVec.y, (float) emitterVec.z);
+        }
+
+        instance.setParticleSpeed(speed.x, speed.y, speed.z);
+        instance.setPos(position.x, position.y, position.z);
+        instance.setPosO(position.x, position.y, position.z);
+        instance.particleGroup = emitter.particleGroup;
+
+        for (IParticleComponent component : preset.effect.orderedParticleComponents) {
+            component.apply(instance);
+        }
+        instance.components = preset.effect.orderedParticleComponentsWhichRequireUpdate;
+        instance.motionDynamic = preset.motionDynamic;
+        if (!instance.motionDynamic) instance.setParticleSpeed(0.0, 0.0, 0.0);
+        Minecraft.getInstance().particleEngine.add(instance);
     }
 
     private static boolean hasSpaceInParticleLimit(ParticleEmitter emitter) {
@@ -194,8 +189,7 @@ public abstract sealed class EmitterShape implements IEmitterComponent permits E
             position.z += sp * Mth.sin(op);
             float[] lp = planeNormal.plane.calculate(instance);
             if (!Arrays.equals(lp, PlaneNormal.YN)) {
-                Quaternionf quaternion = MathHelper.setFromUnitVectors(Mth.Y_AXIS, new Vector3f(lp), new Quaternionf());
-                MathHelper.applyQuaternion(quaternion, position);
+                MathHelper.applyQuaternion(MathHelper.setFromUnitVectors(Mth.Y_AXIS, new Vector3f(lp), new Quaternionf()), position);
             }
             direction.apply(instance, this, position, speed);
         }
@@ -416,6 +410,11 @@ public abstract sealed class EmitterShape implements IEmitterComponent permits E
                     ", offset=" + offset +
                     '}';
         }
+
+        @Override
+        protected boolean isPoint() {
+            return true;
+        }
     }
 
     public static final class Sphere extends EmitterShape {
@@ -513,9 +512,10 @@ public abstract sealed class EmitterShape implements IEmitterComponent permits E
         }
 
         public void apply(MolangInstance instance, EmitterShape shape, Vector3f position, Vector3f speed) {
-            // todo inherited_particle_speed
-            if (this == INWARDS || this == OUTWARDS) {
-                if (shape.getClass() == Point.class) {
+            if (this == OUTWARDS && instance.getEmitter().inheritedParticleSpeed != null) {
+                speed.set(instance.getEmitter().inheritedParticleSpeed);
+            } else if (this == INWARDS || this == OUTWARDS) {
+                if (shape.isPoint()) {
                     MathHelper.applyEuler(MathHelper.getRandomEuler(instance.getLevel().random), speed.set(1, 0, 0));
                 } else {
                     speed.set(position);
@@ -526,7 +526,7 @@ public abstract sealed class EmitterShape implements IEmitterComponent permits E
                 }
             } else {
                 speed.set(direct.calculate(instance));
-                if (speed.lengthSquared() != 0.0F) {
+                if (speed.x != 0.0F || speed.y != 0.0F || speed.z != 0.0F) {
                     speed.normalize();
                 }
             }

@@ -21,8 +21,6 @@ public abstract class ParticleKeyframeDataMixin implements IParticleKeyframeData
     private ResourceLocation particlestorm$particle;
     @Unique
     private MolangExp particlestorm$expression;
-    @Unique
-    private int particlestorm$cachedId = -1;
 
     @Override
     public ResourceLocation particlestorm$getParticle() {
@@ -39,15 +37,5 @@ public abstract class ParticleKeyframeDataMixin implements IParticleKeyframeData
             particlestorm$expression.compile(new MolangParser(variableTable));
         }
         return particlestorm$expression;
-    }
-
-    @Override
-    public void particlestorm$setCachedId(int id) {
-        this.particlestorm$cachedId = id;
-    }
-
-    @Override
-    public int particlestorm$getCachedId() {
-        return this.particlestorm$cachedId;
     }
 }

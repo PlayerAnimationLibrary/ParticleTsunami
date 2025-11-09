@@ -29,7 +29,6 @@ import org.redlance.dima_dencep.mods.particletsunami.ParticleTsunamiMod;
 import org.redlance.dima_dencep.mods.particletsunami.ParticleTsunamiPlatform;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 public class MolangParticleInstance extends SingleQuadParticle implements MolangInstance {
@@ -37,13 +36,12 @@ public class MolangParticleInstance extends SingleQuadParticle implements Molang
     private static final boolean IS_SODIUM_LOADED = ParticleTsunamiPlatform.hasSodium();
 
     public final RandomSource random;
-    public final ParticleDetail detail;
-    private final VariableTable variableTable;
+    public final ParticlePreset preset;
+    protected ParticleVariableTable vars;
     protected final float originX;
     protected final float originY;
 
     public Vector3f acceleration = new Vector3f();
-    public Vector3f readOnlySpeed = new Vector3f();
     public Vector3f facingDirection = new Vector3f();
     public Vector3f initialSpeed = new Vector3f();
     public float xRot = 0.0F;
@@ -61,7 +59,7 @@ public class MolangParticleInstance extends SingleQuadParticle implements Molang
     protected final double particleRandom3;
     protected final double particleRandom4;
     public List<IParticleComponent> components;
-    public ParticleEmitter emitter;
+    protected ParticleEmitter emitter;
     public boolean motionDynamic = false;
 
     public final float scaleU;
@@ -77,21 +75,25 @@ public class MolangParticleInstance extends SingleQuadParticle implements Molang
     public ParticleLimit particleGroup;
     public int lastTimeline = 0;
 
-    public MolangParticleInstance(ParticleDetail detail, ClientLevel level, double x, double y, double z, ExtendMutableSpriteSet sprites) {
-        super(level, x, y, z, sprites.get(detail.effect.description.parameters().getTextureIndex()));
+    public MolangParticleInstance(ParticlePreset preset, ClientLevel level, double x, double y, double z, ExtendMutableSpriteSet sprites) {
+        super(level, x, y, z, sprites.get(preset.effect.description.parameters().getTextureIndex()));
         this.friction = 1.0F;
         this.random = level.getRandom();
-        this.detail = detail;
-        this.variableTable = new VariableTable(detail.variableTable);
+        this.preset = preset;
         this.originX = ((ITextureAtlasSprite) sprite).particlestorm$getOriginX();
         this.originY = ((ITextureAtlasSprite) sprite).particlestorm$getOriginY();
-        this.scaleU = sprite.contents().width() * detail.invTextureWidth;
-        this.scaleV = sprite.contents().height() * detail.invTextureHeight;
+        this.scaleU = sprite.contents().width() * preset.invTextureWidth;
+        this.scaleV = sprite.contents().height() * preset.invTextureHeight;
 
         this.particleRandom1 = random.nextDouble();
         this.particleRandom2 = random.nextDouble();
         this.particleRandom3 = random.nextDouble();
         this.particleRandom4 = random.nextDouble();
+    }
+
+    public void setEmitter(ParticleEmitter emitter) {
+        this.emitter = emitter;
+        this.vars = new ParticleVariableTable(preset.vars, emitter.vars);
     }
 
     public double getXd() {
@@ -104,12 +106,6 @@ public class MolangParticleInstance extends SingleQuadParticle implements Molang
 
     public double getZd() {
         return zd;
-    }
-
-    public void addAcceleration() {
-        this.xd += acceleration.x;
-        this.yd += acceleration.y;
-        this.zd += acceleration.z;
     }
 
     public double getX() {
@@ -156,8 +152,8 @@ public class MolangParticleInstance extends SingleQuadParticle implements Molang
     }
 
     @Override
-    public VariableTable getVariableTable() {
-        return variableTable;
+    public VariableTable getVars() {
+        return vars;
     }
 
     @Override
@@ -196,7 +192,7 @@ public class MolangParticleInstance extends SingleQuadParticle implements Molang
 
     @Override
     public ResourceLocation getIdentity() {
-        return detail.effect.description.identifier();
+        return preset.effect.description.identifier();
     }
 
     @Override
@@ -205,8 +201,8 @@ public class MolangParticleInstance extends SingleQuadParticle implements Molang
     }
 
     @Override
-    public Entity getAttachedEntity() {
-        return emitter.attached;
+    public @Nullable Entity getAttachedEntity() {
+        return emitter.getAttachedEntity();
     }
 
     @Override
@@ -266,13 +262,12 @@ public class MolangParticleInstance extends SingleQuadParticle implements Molang
         this.yRotO = yRot;
         this.oRoll = roll;
         this.roll = roll + rolld;
-        this.readOnlySpeed.set(xd, yd, zd);
         for (IParticleComponent component : components) {
             component.update(this);
         }
     }
 
-    @Override
+    /*@Override
     public void extract(@NotNull QuadParticleRenderState reusedState, @NotNull Camera renderInfo, float partialTicks) {
         Quaternionf quaternionf = new Quaternionf();
         getFacingCameraMode().setRotation(this, quaternionf, renderInfo, partialTicks);
@@ -280,7 +275,7 @@ public class MolangParticleInstance extends SingleQuadParticle implements Molang
         if (yRot != 0.0F) quaternionf.rotateY(Mth.lerp(partialTicks, yRotO, yRot));
         if (roll != 0.0F) quaternionf.rotateZ(Mth.lerp(partialTicks, oRoll, roll));
         extractRotatedQuad(reusedState, renderInfo, quaternionf, partialTicks);
-    }
+    }*/
 
     /*@Override
     protected void extractRotatedQuad(QuadParticleRenderState reusedState, Quaternionf orientation, float x, float y, float z, float partialTick) {
@@ -317,54 +312,46 @@ public class MolangParticleInstance extends SingleQuadParticle implements Molang
 
     @Override
     public void move(double x, double y, double z) {
-        if (!stoppedByCollision) {
-            double d0 = x;
-            double d1 = y;
-            double d2 = z;
-            if (hasPhysics && (x != 0.0 || y != 0.0 || z != 0.0) && x * x + y * y + z * z < MAXIMUM_COLLISION_VELOCITY_SQUARED) {
-                Vec3 vec3 = Entity.collideBoundingBox(null, new Vec3(x, y, z), getBoundingBox(), level, List.of());
-                if (hasCollision) {
-                    if (x != vec3.x) {
-                        this.xd = -Mth.sign(xd) * (Math.abs(xd) - collisionDrag) * coefficientOfRestitution;
-                    }
-                    if (y != vec3.y) {
-                        this.yd *= -coefficientOfRestitution;
-                    }
-                    if (z != vec3.z) {
-                        this.zd = -Mth.sign(zd) * (Math.abs(zd) - collisionDrag) * coefficientOfRestitution;
-                    }
-                }
-                x = vec3.x;
-                y = vec3.y;
-                z = vec3.z;
+        if (stoppedByCollision) return;
+        double d0 = x;
+        double d1 = y;
+        double d2 = z;
+        if (hasPhysics && hasCollision && (x != 0.0 || y != 0.0 || z != 0.0) && x * x + y * y + z * z < MAXIMUM_COLLISION_VELOCITY_SQUARED) {
+            Vec3 vec3 = Entity.collideBoundingBox(null, new Vec3(x, y, z), getBoundingBox(), level, List.of());
+            if (x != vec3.x) {
+                this.xd = -Mth.sign(xd) * (Math.abs(xd) - collisionDrag) * coefficientOfRestitution;
             }
-
-            if (x != 0.0 || y != 0.0 || z != 0.0) {
-                moveDirectly(x, y, z);
+            if (y != vec3.y) {
+                this.yd *= -coefficientOfRestitution;
             }
-
-            if (Math.abs(d1) >= 1.0E-5F && Math.abs(y) < 1.0E-5F) {
-                this.stoppedByCollision = true;
+            if (z != vec3.z) {
+                this.zd = -Mth.sign(zd) * (Math.abs(zd) - collisionDrag) * coefficientOfRestitution;
             }
+            x = vec3.x;
+            y = vec3.y;
+            z = vec3.z;
+        }
 
+        if (x != 0.0 || y != 0.0 || z != 0.0) {
+            moveDirectly(x, y, z);
+        }
+
+        if (Math.abs(d1) >= Mth.EPSILON && Math.abs(y) < Mth.EPSILON) {
+            this.stoppedByCollision = true;
+        }
+
+        if (hasPhysics && hasCollision) {
             this.onGround = d1 != y && d1 < 0.0;
-            boolean collided = false;
-            if (d0 != x) {
-                collided = true;
-                if (!hasCollision) this.xd = 0.0;
-            }
-            if (d2 != z) {
-                collided = true;
-                if (!hasCollision) this.zd = 0.0;
-            }
+            boolean collided = d0 != x || d2 != z;
 
             if (onGround || collided) {
-                if (!detail.collisionEvents.isEmpty()) {
-                    Map<String, Map<String, IEventNode>> events = detail.effect.events;
-                    for (ParticleMotionCollision.Event event : detail.collisionEvents) {
+                if (!preset.collisionEvents.isEmpty()) {
+                    for (ParticleMotionCollision.Event event : preset.collisionEvents) {
                         float tickSpeed = event.minSpeed() * getInvTickRate();
                         if (tickSpeed * tickSpeed < xd * xd + yd * yd + zd * zd) {
-                            events.get(event.event()).forEach((name, node) -> node.execute(this));
+                            for (IEventNode node : preset.effect.events.get(event.event()).values()) {
+                                node.execute(this);
+                            }
                         }
                     }
                 }
@@ -377,30 +364,30 @@ public class MolangParticleInstance extends SingleQuadParticle implements Molang
 
     @Override
     public void remove() {
-        if (detail.lifeTimeEvents != null) {
-            detail.lifeTimeEvents.onExpiration(this);
+        if (preset.lifeTimeEvents != null) {
+            preset.lifeTimeEvents.onExpiration(this);
         }
         super.remove();
     }
 
     @Override
     public @NotNull ParticleRenderType getGroup() {
-        return detail.renderType == null ? ParticleRenderType.NO_RENDER : ParticleRenderType.SINGLE_QUADS;
+        return preset.renderType == null ? ParticleRenderType.NO_RENDER : ParticleRenderType.SINGLE_QUADS;
     }
 
     @Override
     protected @NotNull Layer getLayer() {
-        return detail.renderType == null ? Layer.OPAQUE : detail.renderType;
+        return preset.renderType == null ? Layer.OPAQUE : preset.renderType;
     }
 
     @Override
     public @NotNull FaceCameraMode getFacingCameraMode() {
-        return detail.facingCameraMode;
+        return preset.facingCameraMode;
     }
 
     @Override
     protected int getLightColor(float partialTick) {
-        return detail.environmentLighting ? super.getLightColor(partialTick) : FULL_LIGHT;
+        return preset.environmentLighting ? super.getLightColor(partialTick) : FULL_LIGHT;
     }
 
     @Override
@@ -417,7 +404,7 @@ public class MolangParticleInstance extends SingleQuadParticle implements Molang
 
         @Override
         public @Nullable Particle createParticle(@NotNull MolangParticleOption option, @NotNull ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed, RandomSource random) {
-            return new MolangParticleInstance(ParticleTsunamiMod.LOADER.ID_2_PARTICLE.get(option.getId()), level, x, y, z, sprites);
+            return new MolangParticleInstance(ParticleTsunamiMod.LOADER.id2Particle().get(option.getId()), level, x, y, z, sprites);
         }
     }
 }

@@ -1,6 +1,11 @@
 package org.mesdag.particlestorm.particle;
 
+<<<<<<<< HEAD:common/src/main/java/org/mesdag/particlestorm/particle/ParticleDetail.java
 import net.minecraft.client.particle.SingleQuadParticle;
+========
+import com.google.common.collect.Iterables;
+import net.minecraft.client.particle.ParticleRenderType;
+>>>>>>>> d809110669e34b5219ce8ba010764afb38f26f87:common/src/main/java/org/mesdag/particlestorm/particle/ParticlePreset.java
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.mesdag.particlestorm.api.IComponent;
@@ -9,6 +14,9 @@ import org.mesdag.particlestorm.api.MolangInstance;
 import org.mesdag.particlestorm.data.DefinedParticleEffect;
 import org.mesdag.particlestorm.data.MathHelper;
 import org.mesdag.particlestorm.data.component.*;
+import org.mesdag.particlestorm.data.curve.ParticleCurve;
+import org.mesdag.particlestorm.data.molang.FloatMolangExp;
+import org.mesdag.particlestorm.data.molang.MolangExp;
 import org.mesdag.particlestorm.data.molang.VariableTable;
 import org.mesdag.particlestorm.data.molang.compiler.MathValue;
 import org.mesdag.particlestorm.data.molang.compiler.MolangParser;
@@ -18,6 +26,7 @@ import org.mesdag.particlestorm.data.molang.compiler.value.VariableAssignment;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 
 import static org.mesdag.particlestorm.data.molang.compiler.MolangQueries.applyPrefixAliases;
 
@@ -32,9 +41,9 @@ public class ParticleDetail {
     public List<ParticleMotionCollision.Event> collisionEvents = List.of();
     public final float invTextureWidth;
     public final float invTextureHeight;
-    public boolean motionDynamic = false;
+    public boolean motionDynamic;
 
-    public final VariableTable variableTable;
+    public final VariableTable vars;
     public final List<VariableAssignment> assignments;
 
     public ParticleDetail(DefinedParticleEffect effect) {
@@ -63,25 +72,30 @@ public class ParticleDetail {
 
         VariableTable table = new VariableTable(addDefaultVariables(), null);
         MolangParser parser = new MolangParser(table);
-        effect.curves.forEach((key, value) -> {
-            value.input.compile(parser);
-            value.horizontalRange.compile(parser);
-            value.nodes.either.ifRight(exps -> exps.forEach(exp -> exp.compile(parser)));
-            String name = applyPrefixAliases(key, "variable.", "v.");
-            table.table.put(name, new Variable(name, p -> value.calculate(p, name)));
-        });
+        for (Map.Entry<String, ParticleCurve> entry : effect.curves.entrySet()) {
+            ParticleCurve curve = entry.getValue();
+            curve.input.compile(parser);
+            curve.horizontalRange.compile(parser);
+            curve.nodes.either.ifRight(exps -> {
+                for (FloatMolangExp exp : exps) {
+                    exp.compile(parser);
+                }
+            });
+            String name = applyPrefixAliases(entry.getKey(), "variable.", "v.");
+            table.table.put(name, new Variable(name, p -> curve.calculate(p, name)));
+        }
 
         List<VariableAssignment> toInit = new ArrayList<>();
-        for (IParticleComponent component : effect.orderedParticleComponents) {
-            component.getAllMolangExp().forEach(exp -> {
+        for (IParticleComponent component : Iterables.concat(effect.orderedParticleEarlyComponents, effect.orderedParticleComponents)) {
+            for (MolangExp exp : component.getAllMolangExp()) {
                 exp.compile(parser);
                 MathValue variable = exp.getVariable();
                 if (variable != null && !MathHelper.forAssignment(table.table, toInit, variable)) {
                     MathHelper.forCompound(table.table, toInit, variable);
                 }
-            });
+            }
         }
-        this.variableTable = table;
+        this.vars = table;
         this.assignments = toInit;
     }
 
