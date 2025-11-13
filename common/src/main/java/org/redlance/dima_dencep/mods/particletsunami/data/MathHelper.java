@@ -61,9 +61,28 @@ public class MathHelper {
     }
 
     public static void applyEuler(float ex, float ey, float ez, Vector3f dest) {
-        Quaternionf rotation = new Quaternionf();
-        rotation.rotationYXZ(ey, ex, ez);
-        rotation.transform(dest);
+        float sx = Math.sin(ex * 0.5f);
+        float cx = Math.cosFromSin(sx, ex * 0.5f);
+        float sy = Math.sin(ey * 0.5f);
+        float cy = Math.cosFromSin(sy, ey * 0.5f);
+        float sz = Math.sin(ez * 0.5f);
+        float cz = Math.cosFromSin(sz, ez * 0.5f);
+
+        float x = cy * sx;
+        float y = sy * cx;
+        float z = sy * sx;
+        float w = cy * cx;
+        float qx = x * cz + y * sz;
+        float qy = y * cz - x * sz;
+        float qz = w * sz - z * cz;
+        float qw = w * cz + z * sz;
+
+        float xx = qx * qx, yy = qy * qy, zz = qz * qz, ww = qw * qw;
+        float xy = qx * qy, xz = qx * qz, yz = qy * qz, xw = qx * qw;
+        float zw = qz * qw, yw = qy * qw, k = 1 / (xx + yy + zz + ww);
+        dest.set(Math.fma((xx - yy - zz + ww) * k, dest.x, Math.fma(2 * (xy - zw) * k, dest.y, (2 * (xz + yw) * k) * dest.z)),
+                Math.fma(2 * (xy + zw) * k, dest.x, Math.fma((yy - xx - zz + ww) * k, dest.y, (2 * (yz - xw) * k) * dest.z)),
+                Math.fma(2 * (xz - yw) * k, dest.x, Math.fma(2 * (yz + xw) * k, dest.y, ((zz - xx - yy + ww) * k) * dest.z)));
     }
 
     public static boolean forAssignment(Map<String, Variable> table, List<VariableAssignment> toInit, MathValue value) {
