@@ -281,7 +281,8 @@ public abstract sealed class EmitterShape implements IEmitterComponent permits E
 
         @Override
         protected void initializeParticle(MolangInstance instance, Vector3f position, Vector3f speed) {
-            position.set(offset.calculate(instance));
+            float[] center = offset.calculate(instance);
+            position.set(center);
             float[] n = halfDimensions.calculate(instance);
             RandomSource random = instance.getLevel().random;
             position.x += Mth.nextFloat(random, -n[0], n[0]);
@@ -290,7 +291,7 @@ public abstract sealed class EmitterShape implements IEmitterComponent permits E
             if (surfaceOnly) {
                 int r = random.nextInt(0, 3);
                 boolean i = random.nextBoolean();
-                position.setComponent(r, n[r] * (i ? 1 : -1));
+                position.setComponent(r, center[r] + n[r] * (i ? 1 : -1));
             }
             direction.apply(instance, this, position, speed);
         }
