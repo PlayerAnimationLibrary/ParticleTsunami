@@ -276,7 +276,11 @@ public abstract sealed class EmitterShape implements IEmitterComponent permits E
 
         @Override
         public List<MolangExp> getAllMolangExp() {
-            return List.of(direction.direct.exp1(), direction.direct.exp2(), direction.direct.exp3());
+            return List.of(
+                    offset.exp1(), offset.exp2(), offset.exp3(),
+                    halfDimensions.exp1(), halfDimensions.exp2(), halfDimensions.exp3(),
+                    direction.direct.exp1(), direction.direct.exp2(), direction.direct.exp3()
+            );
         }
 
         @Override
