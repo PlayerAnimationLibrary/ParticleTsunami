@@ -69,6 +69,8 @@ public final class ParticleTsunamiHandler implements CustomKeyFrameEvents.Custom
                 EmitterPreset preset = new EmitterPreset(effect);
                 preset.localPosition = true; // Force local position for in-emote effects
                 return preset;
+            } else {
+                ParticleTsunamiMod.LOGGER.warn("Invalid effect: {}!", particleId);
             }
         }
         return ParticleTsunamiMod.LOADER.id2Emitter().get(particleId);
