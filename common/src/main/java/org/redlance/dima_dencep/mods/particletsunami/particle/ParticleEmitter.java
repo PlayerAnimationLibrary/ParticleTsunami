@@ -11,6 +11,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
+import org.redlance.dima_dencep.mods.particletsunami.ParticleTsunamiMod;
 import org.redlance.dima_dencep.mods.particletsunami.api.IEmitterComponent;
 import org.redlance.dima_dencep.mods.particletsunami.api.MolangInstance;
 import org.redlance.dima_dencep.mods.particletsunami.data.MathHelper;
@@ -21,15 +22,15 @@ import org.redlance.dima_dencep.mods.particletsunami.data.molang.VariableTable;
 import org.redlance.dima_dencep.mods.particletsunami.data.molang.compiler.MathValue;
 import org.redlance.dima_dencep.mods.particletsunami.data.molang.compiler.MolangParser;
 import org.redlance.dima_dencep.mods.particletsunami.data.molang.compiler.value.VariableAssignment;
-import org.redlance.dima_dencep.mods.particletsunami.ParticleTsunamiMod;
 import org.redlance.dima_dencep.mods.particletsunami.mixed.IEntity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 public class ParticleEmitter implements MolangInstance {
-    public ResourceLocation particleId;
+    public EmitterPreset preset;
     public MolangExp expression;
 
     public transient ParentMode parentMode = ParentMode.WORLD;
@@ -37,7 +38,6 @@ public class ParticleEmitter implements MolangInstance {
     public transient Vector3f offsetRot = new Vector3f();
     public transient Vector3f parentPosition;
     public transient Vector3f parentRotation;
-    protected transient EmitterPreset preset;
     protected transient VariableTable vars;
     protected transient List<IEmitterComponent> components;
     public transient ParticleEmitter parent;
@@ -77,19 +77,19 @@ public class ParticleEmitter implements MolangInstance {
     public Vector3f rot = new Vector3f();
     private transient boolean removed = false;
 
-    public ParticleEmitter(Level level, Vec3 pos, ResourceLocation particleId, MolangExp expression) {
+    public ParticleEmitter(Level level, Vec3 pos, EmitterPreset preset, MolangExp expression) {
         this.level = level;
         setPos(pos);
         this.posO = pos;
-        this.particleId = particleId;
+        this.preset = preset;
         this.expression = expression;
         updateRandoms(level.random);
         this.invTickRate = 1.0F / level.tickRateManager().tickrate();
         init();
     }
 
-    public ParticleEmitter(Level level, Vec3 pos, ResourceLocation particleId) {
-        this(level, pos, particleId, MolangExp.EMPTY);
+    public ParticleEmitter(Level level, Vec3 pos, ResourceLocation particleId, MolangExp expression) {
+        this(level, pos, Objects.requireNonNull(ParticleTsunamiMod.LOADER.id2Emitter().get(particleId)), expression);
     }
 
     public void attachEntity(@Nullable Entity entity) {
@@ -105,10 +105,6 @@ public class ParticleEmitter implements MolangInstance {
     }
 
     private void init() {
-        this.preset = ParticleTsunamiMod.LOADER.id2Emitter().get(particleId);
-        if (preset == null) {
-            throw new IllegalArgumentException("Unknown particle id: '" + particleId + "'!");
-        }
         this.vars = new VariableTable(preset.vars);
         if (expression != null && !expression.initialized()) {
             expression.compile(new MolangParser(vars));
@@ -279,7 +275,7 @@ public class ParticleEmitter implements MolangInstance {
 
     @Override
     public ResourceLocation getIdentity() {
-        return particleId;
+        return this.preset.option.getId();
     }
 
     @Override

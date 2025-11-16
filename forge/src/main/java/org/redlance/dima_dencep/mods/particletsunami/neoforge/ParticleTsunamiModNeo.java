@@ -8,8 +8,10 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.registries.RegisterEvent;
+import org.redlance.dima_dencep.mods.particletsunami.particle.MolangParticleInstance;
 import org.redlance.dima_dencep.mods.particletsunami.particle.MolangParticleLoader;
 import org.redlance.dima_dencep.mods.particletsunami.ParticleTsunamiMod;
 
@@ -20,6 +22,7 @@ public class ParticleTsunamiModNeo extends ParticleTsunamiMod {
 
         NeoForge.EVENT_BUS.addListener(this::onClientTickPre);
         bus.addListener(this::onAddClientReloadListeners);
+        bus.addListener(this::onRegisterParticleProviders);
         bus.addListener(this::onRegister);
     }
 
@@ -29,10 +32,14 @@ public class ParticleTsunamiModNeo extends ParticleTsunamiMod {
 
     private void onAddClientReloadListeners(AddClientReloadListenersEvent event) {
         event.addListener(MolangParticleLoader.RELOADER_ID, ParticleTsunamiMod.LOADER);
-        event.addDependency(event.getNameLookup().apply(Minecraft.getInstance().particleEngine.resourceManager), MolangParticleLoader.RELOADER_ID);
+        // event.addDependency(event.getNameLookup().apply(Minecraft.getInstance().particleEngine.resourceManager), MolangParticleLoader.RELOADER_ID);
     }
 
-    public void onRegister(RegisterEvent event) {
+    private void onRegisterParticleProviders(RegisterParticleProvidersEvent event) {
+        event.registerSpecial(ParticleTsunamiMod.MOLANG, new MolangParticleInstance.Provider());
+    }
+
+    private void onRegister(RegisterEvent event) {
         if (event.getRegistry() != BuiltInRegistries.PARTICLE_TYPE) return;
         Registry.register(BuiltInRegistries.PARTICLE_TYPE, MOLANG_PARTICLE, MOLANG);
     }

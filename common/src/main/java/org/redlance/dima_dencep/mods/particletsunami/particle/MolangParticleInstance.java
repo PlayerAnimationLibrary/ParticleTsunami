@@ -27,7 +27,6 @@ import org.redlance.dima_dencep.mods.particletsunami.api.MolangInstance;
 import org.redlance.dima_dencep.mods.particletsunami.data.component.ParticleMotionCollision;
 import org.redlance.dima_dencep.mods.particletsunami.data.molang.VariableTable;
 import org.redlance.dima_dencep.mods.particletsunami.mixed.ITextureAtlasSprite;
-import org.redlance.dima_dencep.mods.particletsunami.ParticleTsunamiMod;
 
 import java.util.List;
 import java.util.Optional;
@@ -76,8 +75,8 @@ public class MolangParticleInstance extends SingleQuadParticle implements Molang
     public ParticleLimit particleGroup;
     public int lastTimeline = 0;
 
-    public MolangParticleInstance(ParticlePreset preset, ClientLevel level, double x, double y, double z, ExtendMutableSpriteSet sprites, RandomSource random) {
-        super(level, x, y, z, sprites.get(preset.effect.description.parameters().getTextureIndex()));
+    public MolangParticleInstance(ParticlePreset preset, ClientLevel level, double x, double y, double z, RandomSource random) {
+        super(level, x, y, z, preset.effect.description.parameters().getTexture());
         this.friction = 1.0F;
         this.random = random;
         this.preset = preset;
@@ -372,15 +371,9 @@ public class MolangParticleInstance extends SingleQuadParticle implements Molang
     }
 
     public static class Provider implements ParticleProvider<MolangParticleOption> {
-        private final ExtendMutableSpriteSet sprites;
-
-        public Provider(ExtendMutableSpriteSet sprites) {
-            this.sprites = sprites;
-        }
-
         @Override
         public @Nullable Particle createParticle(@NotNull MolangParticleOption option, @NotNull ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed, RandomSource random) {
-            return new MolangParticleInstance(ParticleTsunamiMod.LOADER.id2Particle().get(option.getId()), level, x, y, z, sprites, random);
+            return new MolangParticleInstance(option.getPreset(), level, x, y, z, random);
         }
     }
 }

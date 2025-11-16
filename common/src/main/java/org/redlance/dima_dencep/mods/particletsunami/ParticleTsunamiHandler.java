@@ -29,7 +29,7 @@ public class ParticleTsunamiHandler implements CustomKeyFrameEvents.CustomKeyFra
         MolangExp expression = iData.particlestorm$getExpression(variableTable);
 
         ParticleEmitter current = ParticleTsunamiMod.LOADER.getEmitter(iData.particlestorm$getCachedId());
-        if (current == null || current.isRemoved() || !particle.equals(current.particleId)) {
+        if (current == null || current.isRemoved() || !particle.equals(current.getIdentity())) {
             ParticleEmitter emitter = new ParticleEmitter(entity.level(), entity.position(), particle, expression);
             ParticleTsunamiMod.LOADER.addEmitter(emitter);
             System.out.println(emitter);

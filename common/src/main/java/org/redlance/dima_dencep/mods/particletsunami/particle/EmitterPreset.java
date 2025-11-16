@@ -3,6 +3,7 @@ package org.redlance.dima_dencep.mods.particletsunami.particle;
 import org.jetbrains.annotations.NotNull;
 import org.redlance.dima_dencep.mods.particletsunami.api.IEmitterComponent;
 import org.redlance.dima_dencep.mods.particletsunami.api.IEventNode;
+import org.redlance.dima_dencep.mods.particletsunami.data.DefinedParticleEffect;
 import org.redlance.dima_dencep.mods.particletsunami.data.MathHelper;
 import org.redlance.dima_dencep.mods.particletsunami.data.component.*;
 import org.redlance.dima_dencep.mods.particletsunami.data.molang.MolangExp;
@@ -28,6 +29,10 @@ public class EmitterPreset {
     public boolean localRotation = false;
     public boolean localVelocity = false;
     public EmitterLifetimeEvents lifetimeEvents;
+
+    public EmitterPreset(DefinedParticleEffect effect) {
+        this(new MolangParticleOption(effect.description.identifier(), new ParticlePreset(effect)), effect.orderedEmitterComponents, effect.events);
+    }
 
     public EmitterPreset(MolangParticleOption option, List<IEmitterComponent> components, Map<String, Map<String, IEventNode>> events) {
         this.option = option;

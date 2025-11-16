@@ -10,12 +10,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.particle.ParticleResources;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.texture.SpriteLoader;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.AtlasManager;
-import net.minecraft.data.AtlasIds;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
@@ -30,6 +25,7 @@ import org.redlance.dima_dencep.mods.particletsunami.api.IParticleComponent;
 import org.redlance.dima_dencep.mods.particletsunami.api.IntAllocator;
 import org.redlance.dima_dencep.mods.particletsunami.data.DefinedParticleEffect;
 import org.redlance.dima_dencep.mods.particletsunami.ParticleTsunamiMod;
+import org.redlance.dima_dencep.mods.particletsunami.data.molang.MolangExp;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -43,8 +39,6 @@ import java.util.concurrent.Executor;
 public class MolangParticleLoader implements PreparableReloadListener {
     public static final ResourceLocation RELOADER_ID = ResourceLocation.fromNamespaceAndPath(ParticleTsunamiMod.MODID, "reloader");
     private static final FileToIdConverter PARTICLE_LISTER = FileToIdConverter.json("particle_definitions");
-    private Map<ResourceLocation, DefinedParticleEffect> id2Effect = new Hashtable<>();
-    private Map<ResourceLocation, ParticlePreset> id2Particle = new Hashtable<>();
     private Map<ResourceLocation, EmitterPreset> id2Emitter = new Hashtable<>();
     private final Int2ObjectOpenHashMap<ParticleEmitter> emitters = new Int2ObjectOpenHashMap<>();
     private final Object2ObjectMap<Entity, EvictingQueue<ParticleEmitter>> tracker = new Object2ObjectOpenHashMap<>();
@@ -52,22 +46,14 @@ public class MolangParticleLoader implements PreparableReloadListener {
 
     private boolean initialized = false;
 
-    public Map<ResourceLocation, DefinedParticleEffect> id2Effect() {
-        return id2Effect;
-    }
-
-    public Map<ResourceLocation, ParticlePreset> id2Particle() {
-        return id2Particle;
-    }
-
     public Map<ResourceLocation, EmitterPreset> id2Emitter() {
         return id2Emitter;
     }
 
     public void tick(LocalPlayer localPlayer) {
         if (!initialized) {
-            for (ParticlePreset detail : id2Particle.values()) {
-                for (IParticleComponent component : detail.effect.orderedParticleComponents) {
+            for (EmitterPreset detail : id2Emitter.values()) {
+                for (IParticleComponent component : detail.option.getPreset().effect.orderedParticleComponents) {
                     component.initialize(localPlayer.level());
                 }
             }
@@ -134,8 +120,8 @@ public class MolangParticleLoader implements PreparableReloadListener {
 
     public boolean addTrackedEmitter(Entity entity, ResourceLocation particleId) {
         EvictingQueue<ParticleEmitter> queue = tracker.computeIfAbsent(entity, e -> EvictingQueue.create(16));
-        if (!queue.isEmpty() && queue.stream().anyMatch(emitter -> particleId.equals(emitter.particleId))) return false;
-        ParticleEmitter emitter = new ParticleEmitter(entity.level(), entity.position(), particleId);
+        if (!queue.isEmpty() && queue.stream().anyMatch(emitter -> particleId.equals(emitter.getIdentity()))) return false;
+        ParticleEmitter emitter = new ParticleEmitter(entity.level(), entity.position(), particleId, MolangExp.EMPTY);
         addEmitter(emitter);
         emitter.attachEntity(entity);
         queue.add(emitter);
@@ -178,7 +164,7 @@ public class MolangParticleLoader implements PreparableReloadListener {
     @Override
     public @NotNull CompletableFuture<Void> reload(SharedState sharedState, Executor backgroundExecutor, PreparationBarrier preparationBarrier, Executor gameExecutor) {
         ResourceManager resourceManager = sharedState.resourceManager();
-        CompletableFuture<List<DefinedParticleEffect>> prepare = CompletableFuture.supplyAsync(() -> PARTICLE_LISTER.listMatchingResources(resourceManager), backgroundExecutor).thenCompose(map -> {
+        return CompletableFuture.supplyAsync(() -> PARTICLE_LISTER.listMatchingResources(resourceManager), backgroundExecutor).thenCompose(map -> {
             List<CompletableFuture<DefinedParticleEffect>> list = new ArrayList<>(map.size());
             for (Map.Entry<ResourceLocation, Resource> entry : map.entrySet()) {
                 ResourceLocation id = PARTICLE_LISTER.fileToId(entry.getKey());
@@ -191,41 +177,13 @@ public class MolangParticleLoader implements PreparableReloadListener {
                 }, backgroundExecutor));
             }
             return Util.sequence(list);
-        });
-        CompletableFuture<SpriteLoader.Preparations> particleFuture = sharedState.get(AtlasManager.PENDING_STITCH).get(AtlasIds.PARTICLES);
-        return CompletableFuture.allOf(prepare, particleFuture).thenCompose(preparationBarrier::wait).thenAcceptAsync(effects -> {
-            Map<ResourceLocation, DefinedParticleEffect> id2Effect = new Hashtable<>();
-            Map<ResourceLocation, ParticlePreset> id2Particle = new Hashtable<>();
+        }).thenCompose(preparationBarrier::wait).thenAcceptAsync(effects -> {
             Map<ResourceLocation, EmitterPreset> id2Emitter = new Hashtable<>();
-            for (DefinedParticleEffect effect : prepare.join()) {
-                ResourceLocation id = effect.description.identifier();
-                id2Effect.put(id, effect);
-                id2Particle.put(id, new ParticlePreset(effect));
-                id2Emitter.put(id, new EmitterPreset(
-                        new MolangParticleOption(effect.description.identifier()),
-                        effect.orderedEmitterComponents,
-                        effect.events
-                ));
+            for (DefinedParticleEffect effect : effects) {
+                id2Emitter.put(effect.description.identifier(), new EmitterPreset(effect));
             }
-            this.id2Effect = id2Effect;
-            this.id2Particle = id2Particle;
             this.id2Emitter = id2Emitter;
             this.initialized = false;
-
-            ParticleResources resources = Minecraft.getInstance().particleEngine.resourceManager;
-            if (resources.spriteSets.get(ParticleTsunamiMod.MOLANG_PARTICLE) instanceof ExtendMutableSpriteSet spriteSet) {
-                spriteSet.clear();
-                int i = 0;
-                SpriteLoader.Preparations preparations = particleFuture.join();
-                for (Map.Entry<ResourceLocation, DefinedParticleEffect> entry : id2Effect.entrySet()) {
-                    TextureAtlasSprite missing = preparations.missing();
-                    spriteSet.bindMissing(missing);
-                    ResourceLocation texture = entry.getValue().description.parameters().bindTexture(i);
-                    TextureAtlasSprite sprite = preparations.regions().get(texture);
-                    spriteSet.addSprite(sprite == null ? missing : sprite);
-                    i++;
-                }
-            }
         }, gameExecutor);
     }
 }

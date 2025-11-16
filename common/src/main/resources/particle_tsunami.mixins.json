@@ -6,7 +6,6 @@
   "client": [
     "EntityMixin",
     "LivingEntityMixin",
-    "ParticleResourcesMixin",
     "TextureAtlasSpriteMixin"
   ],
   "injectors": {

@@ -2,6 +2,9 @@ package org.redlance.dima_dencep.mods.particletsunami.data.description;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.resources.ResourceLocation;
 
 public class DescriptionParameters {
@@ -11,7 +14,6 @@ public class DescriptionParameters {
     ).apply(instance, DescriptionParameters::new));
     private final DescriptionMaterial material;
     private final ResourceLocation texture;
-    private int index = -1;
 
     public DescriptionParameters(DescriptionMaterial material, ResourceLocation texture) {
         this.material = material;
@@ -26,12 +28,7 @@ public class DescriptionParameters {
         return texture;
     }
 
-    public ResourceLocation bindTexture(int index) {
-        this.index = index;
-        return texture;
-    }
-
-    public int getTextureIndex() {
-        return index;
+    public TextureAtlasSprite getTexture() {
+        return Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.PARTICLES).getSprite(this.texture);
     }
 }
