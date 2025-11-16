@@ -1,25 +1,33 @@
 package org.redlance.dima_dencep.mods.particletsunami;
 
+import com.google.gson.JsonParseException;
+import com.mojang.serialization.JsonOps;
 import com.zigythebird.playeranim.animation.PlayerAnimationController;
+import com.zigythebird.playeranimcore.animation.Animation;
 import com.zigythebird.playeranimcore.animation.AnimationController;
 import com.zigythebird.playeranimcore.animation.AnimationData;
+import com.zigythebird.playeranimcore.animation.ExtraAnimationData;
 import com.zigythebird.playeranimcore.animation.keyframe.event.CustomKeyFrameEvents;
 import com.zigythebird.playeranimcore.animation.keyframe.event.data.KeyFrameData;
 import com.zigythebird.playeranimcore.animation.keyframe.event.data.ParticleKeyframeData;
 import com.zigythebird.playeranimcore.event.EventResult;
 import com.zigythebird.playeranimcore.math.Vec3f;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.GsonHelper;
 import net.minecraft.world.entity.Avatar;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
+import org.redlance.dima_dencep.mods.particletsunami.data.DefinedParticleEffect;
 import org.redlance.dima_dencep.mods.particletsunami.data.molang.MolangExp;
 import org.redlance.dima_dencep.mods.particletsunami.data.molang.VariableTable;
 import org.redlance.dima_dencep.mods.particletsunami.mixed.IEntity;
 import org.redlance.dima_dencep.mods.particletsunami.mixed.IParticleKeyframeData;
+import org.redlance.dima_dencep.mods.particletsunami.particle.EmitterPreset;
 import org.redlance.dima_dencep.mods.particletsunami.particle.ParticleEmitter;
 
 import java.util.Set;
 
-public class ParticleTsunamiHandler implements CustomKeyFrameEvents.CustomKeyFrameHandler<ParticleKeyframeData>, CustomKeyFrameEvents.ResetKeyFramesHandler {
+public final class ParticleTsunamiHandler implements CustomKeyFrameEvents.CustomKeyFrameHandler<ParticleKeyframeData>, CustomKeyFrameEvents.ResetKeyFramesHandler {
     @Override
     public EventResult handle(float animationTick, AnimationController controller, ParticleKeyframeData keyframeData, AnimationData animationData) {
         IParticleKeyframeData iData = (IParticleKeyframeData) keyframeData;
@@ -30,9 +38,12 @@ public class ParticleTsunamiHandler implements CustomKeyFrameEvents.CustomKeyFra
 
         ParticleEmitter current = ParticleTsunamiMod.LOADER.getEmitter(iData.particlestorm$getCachedId());
         if (current == null || current.isRemoved() || !particle.equals(current.getIdentity())) {
-            ParticleEmitter emitter = new ParticleEmitter(entity.level(), entity.position(), particle, expression);
+            EmitterPreset preset = findOrCreateEmitterPreset(controller.getCurrentAnimationInstance(), particle);
+            if (preset == null) return EventResult.PASS;
+
+            ParticleEmitter emitter = new ParticleEmitter(entity.level(), entity.position(), preset, expression);
             ParticleTsunamiMod.LOADER.addEmitter(emitter);
-            System.out.println(emitter);
+
             iData.particlestorm$setCachedId(emitter.id);
             emitter.attachEntity(entity);
             emitter.attachedBlock = null;
@@ -45,6 +56,22 @@ public class ParticleTsunamiHandler implements CustomKeyFrameEvents.CustomKeyFra
         }
 
         return EventResult.SUCCESS;
+    }
+
+    @Nullable
+    private EmitterPreset findOrCreateEmitterPreset(@Nullable Animation animation, ResourceLocation particleId) {
+        if (animation != null && animation.data().has(ExtraAnimationData.PARTICLE_EFFECTS_KEY)) {
+            DefinedParticleEffect effect = DefinedParticleEffect.CODEC.parse(JsonOps.INSTANCE,
+                    GsonHelper.parse((String) animation.data().getRaw(ExtraAnimationData.PARTICLE_EFFECTS_KEY)).get("particle_effect")
+            ).getOrThrow(JsonParseException::new);
+
+            if (effect.description.identifier().equals(particleId)) {
+                EmitterPreset preset = new EmitterPreset(effect);
+                preset.localPosition = true; // Force local position for in-emote effects
+                return preset;
+            }
+        }
+        return ParticleTsunamiMod.LOADER.id2Emitter().get(particleId);
     }
 
     @Override
