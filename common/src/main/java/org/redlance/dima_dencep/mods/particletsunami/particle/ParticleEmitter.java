@@ -1,8 +1,6 @@
 package org.redlance.dima_dencep.mods.particletsunami.particle;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -82,6 +80,7 @@ public class ParticleEmitter implements MolangInstance {
     public ParticleEmitter(Level level, Vec3 pos, ResourceLocation particleId, MolangExp expression) {
         this.level = level;
         setPos(pos);
+        this.posO = pos;
         this.particleId = particleId;
         this.expression = expression;
         updateRandoms(level.random);
@@ -108,11 +107,7 @@ public class ParticleEmitter implements MolangInstance {
     private void init() {
         this.preset = ParticleTsunamiMod.LOADER.id2Emitter().get(particleId);
         if (preset == null) {
-            if (Minecraft.getInstance().player != null) {
-                Minecraft.getInstance().gui.getChat().addMessage(Component.translatable("particle.notFound", particleId.toString()));
-            }
-            remove();
-            return;
+            throw new IllegalArgumentException("Unknown particle id: '" + particleId + "'!");
         }
         this.vars = new VariableTable(preset.vars);
         if (expression != null && !expression.initialized()) {
@@ -219,7 +214,7 @@ public class ParticleEmitter implements MolangInstance {
     }
 
     public boolean isRemoved() {
-        return removed || (attached != null && attached.isRemoved());
+        return removed || (attached != null && attached.isRemoved()) || (attachedBlock != null && attachedBlock.isRemoved());
     }
 
     public void setPos(Vec3 pos) {

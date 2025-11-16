@@ -68,7 +68,10 @@ public abstract sealed class EmitterShape implements IEmitterComponent permits E
     }
 
     private void emittingParticle(ParticleEmitter emitter) {
-        MolangParticleInstance instance = (MolangParticleInstance) (Minecraft.getInstance().particleEngine).makeParticle(emitter.getPreset().option, emitter.getX(), emitter.getY(), emitter.getZ(), 0.0, 0.0, 0.0);
+        MolangParticleInstance instance = (MolangParticleInstance) Minecraft.getInstance().particleEngine.makeParticle(
+                emitter.getPreset().option, emitter.getX(), emitter.getY(), emitter.getZ(), 0.0, 0.0, 0.0
+        );
+        if (instance == null) throw new NullPointerException("Failed to create particle!");
         instance.setEmitter(emitter);
 
         ParticlePreset preset = instance.preset;

@@ -10,6 +10,8 @@ import org.jetbrains.annotations.NotNull;
 import org.redlance.dima_dencep.mods.particletsunami.ParticleTsunamiMod;
 
 public class MolangParticleOption implements ParticleOptions {
+    public static final MapCodec<MolangParticleOption> CODEC = ResourceLocation.CODEC.fieldOf("id").xmap(MolangParticleOption::new, MolangParticleOption::getId);
+    public static final StreamCodec<ByteBuf, MolangParticleOption> STREAM_CODEC = ResourceLocation.STREAM_CODEC.map(MolangParticleOption::new, MolangParticleOption::getId);
     private final ParticleType<MolangParticleOption> type;
     private final ResourceLocation id;
 
@@ -27,18 +29,7 @@ public class MolangParticleOption implements ParticleOptions {
     }
 
     @Override
-    public @NotNull ParticleType<?> getType() {
+    public @NotNull ParticleType<MolangParticleOption> getType() {
         return this.type;
-    }
-
-    public static MapCodec<MolangParticleOption> codec(ParticleType<MolangParticleOption> type) {
-        return ResourceLocation.CODEC.xmap(
-                id -> new MolangParticleOption(type, id),
-                option -> option.id
-        ).fieldOf("id");
-    }
-
-    public static StreamCodec<? super ByteBuf, MolangParticleOption> streamCodec(ParticleType<MolangParticleOption> type) {
-        return ResourceLocation.STREAM_CODEC.map(id -> new MolangParticleOption(type, id), option -> option.id);
     }
 }

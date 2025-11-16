@@ -2,21 +2,20 @@ package org.redlance.dima_dencep.mods.particletsunami.data.molang;
 
 import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
+import net.minecraft.Util;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import org.redlance.dima_dencep.mods.particletsunami.api.MolangInstance;
 import org.redlance.dima_dencep.mods.particletsunami.data.molang.compiler.MathValue;
 import org.redlance.dima_dencep.mods.particletsunami.data.molang.compiler.MolangParser;
+import org.redlance.dima_dencep.mods.particletsunami.data.molang.compiler.value.Constant;
 
 import java.util.Map;
 
 public class MolangExp {
-    public static final MolangExp EMPTY = new MolangExp("");
-    public static final Codec<MolangExp> CODEC = Codec.STRING.xmap(MolangExp::new, e -> e.expStr);
-    public static final StreamCodec<ByteBuf, MolangExp> STREAM_CODEC = StreamCodec.composite(
-            ByteBufCodecs.STRING_UTF8, e -> e.expStr,
-            MolangExp::new
-    );
+    public static final MolangExp EMPTY = Util.make(new MolangExp(""), exp -> exp.variable = new Constant(0.0));
+    public static final Codec<MolangExp> CODEC = Codec.STRING.xmap(MolangExp::new, MolangExp::getExpStr);
+    public static final StreamCodec<ByteBuf, MolangExp> STREAM_CODEC = ByteBufCodecs.STRING_UTF8.map(MolangExp::new, MolangExp::getExpStr);
     protected final String expStr;
     protected MathValue variable;
 
