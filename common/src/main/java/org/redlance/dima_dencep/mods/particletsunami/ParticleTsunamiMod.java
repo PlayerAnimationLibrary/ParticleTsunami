@@ -6,11 +6,11 @@ import com.mojang.serialization.MapCodec;
 import com.zigythebird.playeranimcore.animation.keyframe.event.CustomKeyFrameEvents;
 import com.zigythebird.playeranimcore.event.MolangEvent;
 import com.zigythebird.playeranimcore.molang.MolangLoader;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.particles.ParticleType;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
@@ -31,7 +31,7 @@ public abstract class ParticleTsunamiMod {
     public static final String MODID = "particle_tsunami";
     public static final Logger LOGGER = LoggerFactory.getLogger("ParticleTsunami");
 
-    public static final Codec<List<String>> STRING_LIST_CODEC = Codec.either(Codec.STRING, Codec.list(Codec.STRING)).xmap(
+    public static final Codec<List<String>> STRING_LIST_CODEC = Codec.either(Codec.STRING, Codec.STRING.listOf()).xmap(
             either -> either.map(Collections::singletonList, Function.identity()),
             l -> l.size() == 1 ? Either.left(l.getFirst()) : Either.right(l)
     );
@@ -42,12 +42,12 @@ public abstract class ParticleTsunamiMod {
     public static final ParticleType<MolangParticleOption> MOLANG = new ParticleType<>(false) {
         @Override
         public @NotNull MapCodec<MolangParticleOption> codec() {
-            return MolangParticleOption.codec(this);
+            return MolangParticleOption.CODEC;
         }
 
         @Override
-        public @NotNull StreamCodec<? super RegistryFriendlyByteBuf, MolangParticleOption> streamCodec() {
-            return MolangParticleOption.streamCodec(this);
+        public @NotNull StreamCodec<ByteBuf, MolangParticleOption> streamCodec() {
+            return MolangParticleOption.STREAM_CODEC;
         }
     };
 
