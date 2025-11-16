@@ -13,10 +13,10 @@ import org.redlance.dima_dencep.mods.particletsunami.ParticleTsunamiMod;
 import org.redlance.dima_dencep.mods.particletsunami.data.DefinedParticleEffect;
 
 public class MolangParticleOption implements ParticleOptions {
-    public static final MapCodec<MolangParticleOption> CODEC = MapCodec.assumeMapUnsafe(RecordCodecBuilder.create(instance -> instance.group(
+    public static final MapCodec<MolangParticleOption> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             ResourceLocation.CODEC.fieldOf("id").forGetter(MolangParticleOption::getId),
             DefinedParticleEffect.CODEC.fieldOf("preset").forGetter(MolangParticleOption::getEffect)
-    ).apply(instance, MolangParticleOption::new)));
+    ).apply(instance, MolangParticleOption::new));
     public static final StreamCodec<ByteBuf, MolangParticleOption> STREAM_CODEC = StreamCodec.composite(
             ResourceLocation.STREAM_CODEC, MolangParticleOption::getId,
             ByteBufCodecs.fromCodec(DefinedParticleEffect.CODEC), MolangParticleOption::getEffect,
