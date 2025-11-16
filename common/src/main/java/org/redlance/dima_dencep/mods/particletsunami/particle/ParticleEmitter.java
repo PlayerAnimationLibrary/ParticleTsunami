@@ -13,6 +13,7 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 import org.redlance.dima_dencep.mods.particletsunami.ParticleTsunamiMod;
 import org.redlance.dima_dencep.mods.particletsunami.api.IEmitterComponent;
+import org.redlance.dima_dencep.mods.particletsunami.api.IParticleComponent;
 import org.redlance.dima_dencep.mods.particletsunami.api.MolangInstance;
 import org.redlance.dima_dencep.mods.particletsunami.data.MathHelper;
 import org.redlance.dima_dencep.mods.particletsunami.data.component.EmitterLifetime;
@@ -105,6 +106,9 @@ public class ParticleEmitter implements MolangInstance {
     }
 
     private void init() {
+        for (IParticleComponent component : this.preset.option.getPreset().effect.orderedParticleComponents) {
+            component.initialize(this.level);
+        }
         this.vars = new VariableTable(preset.vars);
         if (expression != null && !expression.initialized()) {
             expression.compile(new MolangParser(vars));

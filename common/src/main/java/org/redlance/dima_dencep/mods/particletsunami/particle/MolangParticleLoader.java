@@ -21,7 +21,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.redlance.dima_dencep.mods.particletsunami.api.IParticleComponent;
 import org.redlance.dima_dencep.mods.particletsunami.api.IntAllocator;
 import org.redlance.dima_dencep.mods.particletsunami.data.DefinedParticleEffect;
 import org.redlance.dima_dencep.mods.particletsunami.ParticleTsunamiMod;
@@ -52,11 +51,6 @@ public class MolangParticleLoader implements PreparableReloadListener {
 
     public void tick(LocalPlayer localPlayer) {
         if (!initialized) {
-            for (EmitterPreset detail : id2Emitter.values()) {
-                for (IParticleComponent component : detail.option.getPreset().effect.orderedParticleComponents) {
-                    component.initialize(localPlayer.level());
-                }
-            }
             removeAll();
             this.initialized = true;
         }
